@@ -9,11 +9,11 @@ namespace wrapsdl2 {
     void quit(void);
 
     namespace util {
-        constexpr bool sdl_bool(SDL_bool b) {
+        constexpr inline bool sdl_bool(SDL_bool b) {
             return b == SDL_TRUE;
         }
 
-        constexpr SDL_bool sdl_bool(bool b) {
+        constexpr inline SDL_bool sdl_bool(bool b) {
             return (b) ? SDL_TRUE : SDL_FALSE;
         }
     }

@@ -24,10 +24,9 @@ namespace wrapsdl2 {
         void open();
         void close();
 
-
-        void show();
-        void hide();
-        void raise();
+        inline void show() { SDL_ShowWindow(m_window); }
+        inline void hide() { SDL_HideWindow(m_window); }
+        inline void raise() { SDL_RaiseWindow(m_window); }
 
         // getters
         bool is_open();
