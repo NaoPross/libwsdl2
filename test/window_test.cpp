@@ -1,39 +1,51 @@
+#include "../debug.hpp"
+
 #include "wrapsdl2.hpp"
 #include "video.hpp"
+#include "event.hpp"
 
 #include <iostream>
 #include <thread>
 #include <mutex>
 
 int main(int argc, char *argv[]) {
+
+    using namespace wrapsdl2;
+
     wrapsdl2::initialize();
 
-    {
-        using namespace wrapsdl2;
+    window win("Window Test", 800, 600);
+    std::mutex win_mutex;
 
-        window win("Window Test", 800, 600);
-        std::mutex win_mutex;
+    win.open();
 
-        std::cout << "press ENTER to show the window" << std::endl;
-        std::cin.get();
+    std::thread win_update([&]() {
+        std::lock_guard<std::mutex> lock(win_mutex);
+        do {
+            std::optional<event> ev = poll_event();
+            if (ev.has_value()) {
+                event& event = ev.value();
+                npdebug("received event", event.sdl().type);
 
-        win.show();
+                // TODO: remove this sdl code
+                if (event.sdl().type == SDL_WINDOWEVENT) {
+                    if (event.sdl().window.event == SDL_WINDOWEVENT_CLOSE) {
+                        npdebug("SDL_WINDOWEVENT_CLOSE")
+                        win.close();
+                    }
+                }
 
-        std::thread win_update([&]() {
-            std::lock_guard<std::mutex> lock(win_mutex);
-            while (win.is_open()) {
-                win.update();
-                wrapsdl2::delay(200);
-
-
+                if (event.sdl().type == SDL_QUIT) {
+                    npdebug("SDL_QUIT");
+                    win.close();
+                }
             }
-        });
 
-        std::cout << "press ENTER to quit" << std::endl;
-        std::cin.get();
+            win.update();
+        } while (win.is_open());
+    });
 
-        win_update.join();
-    }
+    win_update.join();
 
     wrapsdl2::quit();
     return 0;

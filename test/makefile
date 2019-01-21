@@ -9,6 +9,10 @@ OBJS := $(patsubst %.cpp,build/%.o,$(SRCS))
 # Recipes
 all: build/window_test
 
+.PHONY: run
+run: build/window_test
+	./build/window_test
+
 build/window_test: build/window_test.o
 	$(CPP) $(CFLAGS) -o $@ $< $(LFLAGS)
 
