@@ -1,12 +1,12 @@
 #include "video.hpp"
 #include "debug.hpp"
 
+#include <exception>
+#include <cstdint>
+
 extern "C" {
 #include <SDL2/SDL.h>
 }
-
-#include <exception>
-
 
 using namespace wrapsdl2;
 
@@ -38,6 +38,12 @@ window::~window() {
 void window::show() { SDL_ShowWindow(m_window); }
 void window::hide() { SDL_HideWindow(m_window); }
 void window::raise() { SDL_RaiseWindow(m_window); }
+
+bool window::visible() {
+    std::uint32_t flags = SDL_GetWindowFlags(m_window);
+
+    return flags & SDL_WINDOW_SHOWN;
+}
 
 void window::update() {
     SDL_UpdateWindowSurface(m_window);

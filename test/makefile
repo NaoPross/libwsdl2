@@ -1,7 +1,7 @@
 # Compiler
 CPP    := c++
 CFLAGS := -Wall -pedantic -std=c++17 -fPIC -I ../include -DDEBUG
-LFLAGS := ../build/libwrapsdl2.so -lSDL2 
+LFLAGS := ../build/libwrapsdl2.so -lSDL2 -lpthread
 
 SRCS := $(wildcard *.cpp)
 OBJS := $(patsubst %.cpp,build/%.o,$(SRCS))

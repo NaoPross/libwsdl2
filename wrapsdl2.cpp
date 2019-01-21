@@ -15,5 +15,14 @@ bool wrapsdl2::initialize(void) {
 }
 
 void wrapsdl2::quit(void) {
+    if (SDL_WasInit(SDL_INIT_VIDEO))
+        SDL_QuitSubSystem(SDL_INIT_VIDEO);
+    
     SDL_Quit();
+}
+
+
+
+void wrapsdl2::delay(unsigned ms) {
+    SDL_Delay(ms);
 }

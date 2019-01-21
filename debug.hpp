@@ -4,8 +4,6 @@
 #include <sstream>
 
 #ifdef DEBUG
-
-	#warning building in debug mode!
 	#ifdef __builtin_strrchr
 		#define __FILENAME__ (\
 			__builtin_strrchr(__FILE__, '/') ? \

@@ -1,9 +1,23 @@
 #pragma once
 
+extern "C" {
+#include <SDL2/SDL.h>
+}
+
 namespace wrapsdl2 {
     bool initialize(void);
     void quit(void);
+
+    namespace util {
+        constexpr bool sdl_bool(SDL_bool b) {
+            return b == SDL_TRUE;
+        }
+
+        constexpr SDL_bool sdl_bool(bool b) {
+            return (b) ? SDL_TRUE : SDL_FALSE;
+        }
+    }
     
     // tool functions
-    void delay()
+    void delay(unsigned ms);
 }

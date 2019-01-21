@@ -1,11 +1,16 @@
 #pragma once
 
 #include <string>
+#include <array>
 
-class SDL_Window;
-class SDL_Surface;
+extern "C" {
+#include <SDL2/SDL_video.h>
+}
 
 namespace wrapsdl2 {
+    typedef SDL_Point point;
+    typedef SDL_Rect rect;
+
     class window {
     public:
         window() = delete;
@@ -14,10 +19,13 @@ namespace wrapsdl2 {
         window(const std::string& title, std::size_t width, std::size_t height);
         ~window();
 
-        // manipulation
+        // setters
         void show();
         void hide();
         void raise();
+
+        // getters
+        bool visible();
 
         // rendering
         void update();
