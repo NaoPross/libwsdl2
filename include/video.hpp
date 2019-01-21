@@ -5,6 +5,7 @@
 
 extern "C" {
 #include <SDL2/SDL_video.h>
+#include <SDL2/SDL_render.h>
 }
 
 namespace wrapsdl2 {
@@ -20,18 +21,24 @@ namespace wrapsdl2 {
         ~window();
 
         // setters
+        void open();
+        void close();
+
+
         void show();
         void hide();
         void raise();
 
         // getters
-        bool visible();
+        bool is_open();
+        bool is_visible();
 
         // rendering
         void update();
 
     private:
+        bool m_open;
         SDL_Window *m_window;
-        SDL_Surface *m_surface;
+        SDL_Renderer *m_renderer;
     };
 }
