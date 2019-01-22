@@ -31,7 +31,8 @@ with open("build.ninja", "w") as bf:
         print("build {}: cpp {}".format(o, s), file=bf)
 
     # build engine library
-    print("\nbuild build/libwsdl2.so: link-shared " + " ".join(objects) + "\n", file=bf)
+    print("\nbuild build/libwsdl2.so: link-shared " + " ".join(objects), file=bf)
+    print("\nbuild build/libwsdl2.a: link-static " + " ".join(objects), file=bf)
 
 
     # find test sources
