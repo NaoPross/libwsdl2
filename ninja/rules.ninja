@@ -1,0 +1,27 @@
+includes = -I include
+cflags = -Wall -Werror -pedantic -fPIC -std=c++17 -DDEBUG $includes
+
+libs = -lSDL2 -lpthread
+lflags = $libs
+
+flags = -fdiagnostics-color
+
+rule mkdir
+    command = mkdir -p $out
+    description = creating directory $out
+
+rule cpp
+    command = g++ $flags $cflags -c $in -o $out $lflags
+    description = compiling $in
+
+rule link
+    command = g++ $flags $cflags -o $out $in $lflags
+    description = linking $out
+
+rule link-shared
+    command = g++ $flags $cflags -shared -o $out $in $lflags
+    description = linking shared object $out
+
+rule link-static
+    command = ar rvs $out $in
+    description = creating archive $out

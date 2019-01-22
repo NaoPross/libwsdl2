@@ -1,5 +1,7 @@
 build
-test/build
+
+.ninja*
+build.ninja
 
 **/*.swp
 **/*.sublime*
