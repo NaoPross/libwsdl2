@@ -1,4 +1,4 @@
-#include "wrapsdl2.hpp"
+#include "wsdl2.hpp"
 #include "debug.hpp"
 
 #ifdef WRAPSDL2_EXCEPTIONS
@@ -9,7 +9,7 @@ extern "C" {
 #include <SDL2/SDL.h>
 }
 
-bool wrapsdl2::initialize(void) {
+bool wsdl2::initialize(void) {
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
 #ifdef WRAPSDL2_EXCEPTIONS
         throw std::runtime_error("failed to initialize sdl video subsystem");
@@ -29,7 +29,7 @@ bool wrapsdl2::initialize(void) {
     return true;
 }
 
-void wrapsdl2::quit(void) {
+void wsdl2::quit(void) {
     if (SDL_WasInit(SDL_INIT_VIDEO))
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
@@ -43,6 +43,6 @@ void wrapsdl2::quit(void) {
 
 
 
-void wrapsdl2::delay(unsigned ms) {
+void wsdl2::delay(unsigned ms) {
     SDL_Delay(ms);
 }

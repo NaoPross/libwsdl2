@@ -8,7 +8,7 @@ extern "C" {
 #include <SDL2/SDL_render.h>
 }
 
-namespace wrapsdl2 {
+namespace wsdl2 {
     typedef SDL_Point point;
     typedef SDL_Rect rect;
 

@@ -1,6 +1,6 @@
 #include "../debug.hpp"
 
-#include "wrapsdl2.hpp"
+#include "wsdl2.hpp"
 #include "video.hpp"
 #include "event.hpp"
 
@@ -10,9 +10,9 @@
 
 int main(int argc, char *argv[]) {
 
-    using namespace wrapsdl2;
+    using namespace wsdl2;
 
-    wrapsdl2::initialize();
+    wsdl2::initialize();
 
     window win("Window Test", 800, 600);
     std::mutex win_mutex;
@@ -47,6 +47,6 @@ int main(int argc, char *argv[]) {
 
     win_update.join();
 
-    wrapsdl2::quit();
+    wsdl2::quit();
     return 0;
 }

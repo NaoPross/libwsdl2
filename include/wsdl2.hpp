@@ -4,7 +4,7 @@ extern "C" {
 #include <SDL2/SDL.h>
 }
 
-namespace wrapsdl2 {
+namespace wsdl2 {
     bool initialize(void);
     void quit(void);
 

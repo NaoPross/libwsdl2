@@ -6,7 +6,7 @@ extern "C" {
 #include <SDL2/SDL_events.h>
 }
 
-namespace wrapsdl2 {
+namespace wsdl2 {
     class event {
     public:
         using type = SDL_EventType;

@@ -8,7 +8,7 @@ extern "C" {
 #include <SDL2/SDL.h>
 }
 
-using namespace wrapsdl2;
+using namespace wsdl2;
 
 /* class window */
 
