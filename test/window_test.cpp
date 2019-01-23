@@ -41,6 +41,8 @@ int main(int argc, char *argv[]) {
             }
 
             win.update();
+            // ~60 fps test
+            wsdl2::delay(1000.0/60.0);
         } while (win.is_open());
     });
 
