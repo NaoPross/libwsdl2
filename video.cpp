@@ -4,11 +4,14 @@
 #include <exception>
 #include <cstdint>
 
+#include <vector>
+
 extern "C" {
 #include <SDL2/SDL.h>
 }
 
 using namespace wsdl2;
+
 
 /* class window */
 
@@ -64,6 +67,18 @@ void window::update() {
     m_renderer.present();
 }
 
+SDL_Window * window::sdl() {
+#ifndef DEBUG
+    if (m_window == NULL) {
+        throw std::runtime_error(
+            "attempted to call window::sdl() when m_window is NULL"
+        );
+    }
+#endif
+
+    return m_window;
+}
+
 
 /* class renderer */
 
@@ -71,10 +86,12 @@ renderer::renderer() {
     npdebug("warning: created uninitialized renderer object");
 }
 
-SDL_Renderer * renderer::safe() {
-#ifndef WRAPSDL2_UNSAFE
+SDL_Renderer * renderer::sdl() {
+#ifndef DEBUG
     if (m_renderer == NULL) {
-        throw std::runtime_error("attempted to call safe() when m_renderer is NULL");
+        throw std::runtime_error(
+            "attempted to call renderer::sdl() when m_renderer is NULL"
+        );
     }
 #endif
 

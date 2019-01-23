@@ -1,4 +1,4 @@
-includes = -I include
+includes = -I . -I include
 cflags = -Wall -Werror -pedantic -fPIC -std=c++17 -DDEBUG $includes
 
 libs = -lSDL2 -lpthread
