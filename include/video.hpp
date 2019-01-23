@@ -12,13 +12,37 @@ namespace wsdl2 {
     typedef SDL_Point point;
     typedef SDL_Rect rect;
 
+    class window;
+
+    class renderer {
+    public:
+        friend class window;
+
+        renderer(window& w);
+        virtual ~renderer();
+
+        inline void clear() { SDL_RenderClear(safe()); }
+        inline void present() { SDL_RenderPresent(safe()); }
+
+        // dirty C code
+        inline SDL_Renderer* sdl() { return m_renderer; }
+
+    private:
+        renderer();
+
+        SDL_Renderer* safe();
+        void create_sdl_renderer(SDL_Window *win);
+
+        SDL_Renderer *m_renderer;
+    };
+
     class window {
     public:
         window() = delete;
         window(const window& other) = delete;
 
         window(const std::string& title, std::size_t width, std::size_t height);
-        ~window();
+        virtual ~window();
 
         // setters
         void open();
@@ -35,9 +59,15 @@ namespace wsdl2 {
         // rendering
         void update();
 
+        // dirty C code
+        inline SDL_Window* sdl() { return m_window; }
+
     private:
         bool m_open;
+        renderer m_renderer;
         SDL_Window *m_window;
-        SDL_Renderer *m_renderer;
     };
+
+
+
 }

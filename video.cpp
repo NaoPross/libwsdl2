@@ -27,21 +27,13 @@ window::window(const std::string& title, std::size_t width, std::size_t height) 
         throw std::runtime_error("failed to create SDL window");
     }
 
-    // create a rendering contest
-    m_renderer = SDL_CreateRenderer(
-        m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
-    );
+    m_renderer.create_sdl_renderer(m_window);
 
     // other attributes
     m_open = false;
 }
 
 window::~window() {
-    if (m_renderer != NULL)
-        SDL_DestroyRenderer(m_renderer);
-    else
-        npdebug("warning: m_renderer is NULL")
-
     if (m_window != NULL)
         SDL_DestroyWindow(m_window);
     else
@@ -68,6 +60,45 @@ bool window::is_visible() {
 }
 
 void window::update() {
-    SDL_RenderClear(m_renderer);
-    SDL_RenderPresent(m_renderer);
+    m_renderer.clear();
+    m_renderer.present();
+}
+
+
+/* class renderer */
+
+renderer::renderer() {
+    npdebug("warning: created uninitialized renderer object");
+}
+
+SDL_Renderer * renderer::safe() {
+#ifndef WRAPSDL2_UNSAFE
+    if (m_renderer == NULL) {
+        throw std::runtime_error("attempted to call safe() when m_renderer is NULL");
+    }
+#endif
+
+    return m_renderer;
+}
+
+void renderer::create_sdl_renderer(SDL_Window *win)  {
+    // create a rendering contest
+    m_renderer = SDL_CreateRenderer(
+        win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+    );
+
+    if (m_renderer == NULL) {
+        throw std::runtime_error("failed to create SDL renderer");
+    }
+}
+
+renderer::renderer(window& w) {
+    create_sdl_renderer(w.sdl());
+}
+
+renderer::~renderer() {
+    if (m_renderer != NULL)
+        SDL_DestroyRenderer(m_renderer);
+    else
+        npdebug("warning: m_renderer is NULL")
 }

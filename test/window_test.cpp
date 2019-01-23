@@ -25,7 +25,6 @@ int main(int argc, char *argv[]) {
             std::optional<event> ev = poll_event();
             if (ev.has_value()) {
                 event& event = ev.value();
-                npdebug("received event", event.sdl().type);
 
                 // TODO: remove this sdl code
                 if (event.sdl().type == SDL_WINDOWEVENT) {

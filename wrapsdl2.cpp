@@ -11,20 +11,16 @@ extern "C" {
 
 bool wsdl2::initialize(void) {
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
-#ifdef WRAPSDL2_EXCEPTIONS
-        throw std::runtime_error("failed to initialize sdl video subsystem");
-#endif
+        throw std::runtime_error("failed to initialize SDL video subsystem");
         return false;
     }
 
     if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0) {
-#ifdef WRAPSDL2_EXCEPTIONS
-        throw std::runtime_error("failed to initialzie sdl events subsystem");
-#endif
+        throw std::runtime_error("failed to initialzie SDL events subsystem");
         return false;
     }
 
-    npdebug("initialized sdl2");
+    npdebug("initialized SDL2");
 
     return true;
 }
@@ -38,7 +34,7 @@ void wsdl2::quit(void) {
 
     SDL_Quit();
 
-    npdebug("deinitialized (quit) sdl2");
+    npdebug("deinitialized (quit) SDL2");
 }
 
 
