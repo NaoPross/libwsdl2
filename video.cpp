@@ -12,6 +12,39 @@ extern "C" {
 
 using namespace wsdl2;
 
+
+/* class texture */
+
+texture::texture(renderer& r, texture::pixformat p, texture::access a,
+                 std::size_t width, std::size_t height)
+
+    : _format(p), _access(a), m_renderer(r)
+{
+    m_texture = SDL_CreateTexture(r.m_renderer, 
+        static_cast<Uint32>(p), static_cast<int>(a), 
+        static_cast<int>(width), static_cast<int>(height)
+    );
+}
+
+texture::~texture() {
+    if (m_texture != NULL)
+        SDL_DestroyTexture(m_texture);
+    else
+        npdebug("warning: m_texture is NULL");
+}
+
+SDL_Texture* texture::sdl() {
+#ifdef DEBUG
+    if (m_texture == NULL) {
+        throw std::runtime_error(
+            "attempted to call texture::sdl() when m_texture is NULL"
+        );
+    }
+#endif
+
+    return m_texture;
+}
+
 /* class renderer */
 
 renderer::renderer() {
@@ -19,7 +52,7 @@ renderer::renderer() {
 }
 
 SDL_Renderer * renderer::sdl() {
-#ifndef DEBUG
+#ifdef DEBUG
     if (m_renderer == NULL) {
         throw std::runtime_error(
             "attempted to call renderer::sdl() when m_renderer is NULL"
@@ -107,7 +140,7 @@ void window::update() {
 }
 
 SDL_Window * window::sdl() {
-#ifndef DEBUG
+#ifdef DEBUG
     if (m_window == NULL) {
         throw std::runtime_error(
             "attempted to call window::sdl() when m_window is NULL"

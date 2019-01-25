@@ -13,6 +13,8 @@ extern "C" {
 
 namespace wsdl2 {
     // forward declarations
+    class texture;
+    class renderer;
     class window;
 
     // name aliases
@@ -23,13 +25,111 @@ namespace wsdl2 {
         std::uint8_t r, g, b, a;
     };
 
+    enum class blend_mode {
+        // TODO: map blend modes
+        unimplemented
+    };
+
+    /// a graphic object allocated in the VRAM,
+    /// the CPU has not much control of this buffer
+    class texture {
+    public:
+        enum class pixformat : Uint32 {
+            unknown     = SDL_PIXELFORMAT_UNKNOWN,
+            index1lsb   = SDL_PIXELFORMAT_INDEX1LSB,
+            index1msb   = SDL_PIXELFORMAT_INDEX1MSB,
+            index4lsb   = SDL_PIXELFORMAT_INDEX4LSB,
+            index4msb   = SDL_PIXELFORMAT_INDEX4MSB,
+            index8      = SDL_PIXELFORMAT_INDEX8,
+            rgb332      = SDL_PIXELFORMAT_RGB332,
+            rgb444      = SDL_PIXELFORMAT_RGB444,
+            rgb555      = SDL_PIXELFORMAT_RGB555,
+            bgr555      = SDL_PIXELFORMAT_BGR555,
+            argb4444    = SDL_PIXELFORMAT_ARGB4444,
+            rgba4444    = SDL_PIXELFORMAT_RGBA4444,
+            abgr4444    = SDL_PIXELFORMAT_ABGR4444,
+            bgra4444    = SDL_PIXELFORMAT_BGRA4444,
+            argb1555    = SDL_PIXELFORMAT_ARGB1555,
+            rgba5551    = SDL_PIXELFORMAT_RGBA5551,
+            abgr1555    = SDL_PIXELFORMAT_ABGR1555,
+            bgra5551    = SDL_PIXELFORMAT_BGRA5551,
+            rgb565      = SDL_PIXELFORMAT_RGB565,
+            bgr565      = SDL_PIXELFORMAT_BGR565,
+            rgb24       = SDL_PIXELFORMAT_RGB24,
+            bgr24       = SDL_PIXELFORMAT_BGR24,
+            rgb888      = SDL_PIXELFORMAT_RGB888,
+            rgbx8888    = SDL_PIXELFORMAT_RGBX8888,
+            bgr888      = SDL_PIXELFORMAT_BGR888,
+            bgrx8888    = SDL_PIXELFORMAT_BGRX8888,
+            argb8888    = SDL_PIXELFORMAT_ARGB8888,
+            rgba8888    = SDL_PIXELFORMAT_RGBA8888,
+            abgr8888    = SDL_PIXELFORMAT_ABGR8888,
+            bgra8888    = SDL_PIXELFORMAT_BGRA8888,
+            argb2101010 = SDL_PIXELFORMAT_ARGB2101010,
+        };
+
+        enum class access : int {
+            static_ = SDL_TEXTUREACCESS_STATIC,
+            streaming = SDL_TEXTUREACCESS_STREAMING,
+            target = SDL_TEXTUREACCESS_TARGET
+        };
+
+        const pixformat _format;
+        const access _access;
+
+        texture() = delete;
+
+        // TODO: create a texture copy constructor?
+        texture(const texture& other) = delete;
+        // TODO: create surface wrapper class
+        // texture(const surface& surf);
+
+        texture(renderer& r, pixformat p, access a, std::size_t width, std::size_t height);
+        virtual ~texture();
+
+        /// lock a portion to be write-only
+        // TODO: needs surface wrapper class
+        // bool lock(const rect& region, const surface&);
+        inline void unlock() { SDL_UnlockTexture(m_texture); }
+
+        inline bool alpha(std::uint8_t val) {
+            int supported = SDL_SetTextureAlphaMod(m_texture, val);
+            if (supported == -1)
+                return false;
+            else if (supported == 0)
+                return true;
+
+            util::check(supported);
+            return false;
+
+        }
+
+        inline std::uint8_t alpha() {
+            std::uint8_t val;
+            util::check(0 == SDL_GetTextureAlphaMod(m_texture, &val));
+
+            return val;
+        }
+
+    private:
+        renderer& m_renderer;
+        SDL_Texture *m_texture;
+
+        // dirty C code
+        SDL_Texture* sdl();
+    };
+
+    /// the guy who does the actual hard stuff
     class renderer {
     public:
         friend class window;
+        friend class texture;
 
         renderer(window& w);
+        renderer(texture& t);
         virtual ~renderer();
 
+        inline void set_target() {}
         inline void clear() { SDL_RenderClear(sdl()); }
         inline void present() { SDL_RenderPresent(sdl()); }
 
@@ -133,6 +233,8 @@ namespace wsdl2 {
         SDL_Renderer* sdl();
     };
 
+
+    /// a basic wrapper around a SDL window
     class window {
     public:
         friend class renderer;
