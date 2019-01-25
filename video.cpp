@@ -12,6 +12,45 @@ extern "C" {
 
 using namespace wsdl2;
 
+/* class renderer */
+
+renderer::renderer() {
+    npdebug("warning: created uninitialized renderer object");
+}
+
+SDL_Renderer * renderer::sdl() {
+#ifndef DEBUG
+    if (m_renderer == NULL) {
+        throw std::runtime_error(
+            "attempted to call renderer::sdl() when m_renderer is NULL"
+        );
+    }
+#endif
+
+    return m_renderer;
+}
+
+void renderer::create_sdl_renderer(SDL_Window *win)  {
+    // create a rendering contest
+    m_renderer = SDL_CreateRenderer(
+        win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+    );
+
+    if (m_renderer == NULL) {
+        throw std::runtime_error("failed to create SDL renderer");
+    }
+}
+
+renderer::renderer(window& w) {
+    create_sdl_renderer(w.sdl());
+}
+
+renderer::~renderer() {
+    if (m_renderer != NULL)
+        SDL_DestroyRenderer(m_renderer);
+    else
+        npdebug("warning: m_renderer is NULL")
+}
 
 /* class window */
 
@@ -77,45 +116,4 @@ SDL_Window * window::sdl() {
 #endif
 
     return m_window;
-}
-
-
-/* class renderer */
-
-renderer::renderer() {
-    npdebug("warning: created uninitialized renderer object");
-}
-
-SDL_Renderer * renderer::sdl() {
-#ifndef DEBUG
-    if (m_renderer == NULL) {
-        throw std::runtime_error(
-            "attempted to call renderer::sdl() when m_renderer is NULL"
-        );
-    }
-#endif
-
-    return m_renderer;
-}
-
-void renderer::create_sdl_renderer(SDL_Window *win)  {
-    // create a rendering contest
-    m_renderer = SDL_CreateRenderer(
-        win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
-    );
-
-    if (m_renderer == NULL) {
-        throw std::runtime_error("failed to create SDL renderer");
-    }
-}
-
-renderer::renderer(window& w) {
-    create_sdl_renderer(w.sdl());
-}
-
-renderer::~renderer() {
-    if (m_renderer != NULL)
-        SDL_DestroyRenderer(m_renderer);
-    else
-        npdebug("warning: m_renderer is NULL")
 }
