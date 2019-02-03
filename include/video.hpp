@@ -4,6 +4,7 @@
 
 #include <string>
 #include <array>
+#include <map>
 #include <type_traits>
 
 extern "C" {
@@ -236,6 +237,9 @@ namespace wsdl2 {
 
     /// a basic wrapper around a SDL window
     class window {
+
+        static std::map<Uint8, window*> win_map;
+
     public:
         friend class renderer;
 
@@ -261,6 +265,8 @@ namespace wsdl2 {
         renderer& get_renderer() { return m_renderer; }
         void update();
 
+        static window * get(Uint8 id);
+
     private:
         bool m_open;
         renderer m_renderer;
@@ -269,7 +275,4 @@ namespace wsdl2 {
         // dirty C code
         SDL_Window* sdl();
     };
-
-
-
 }

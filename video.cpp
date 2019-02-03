@@ -12,6 +12,7 @@ extern "C" {
 
 using namespace wsdl2;
 
+std::map<Uint8, window*> win_map;
 
 /* class texture */
 
@@ -102,6 +103,9 @@ window::window(const std::string& title, std::size_t width, std::size_t height) 
         throw std::runtime_error("failed to create SDL window");
     }
 
+    // put into window id mapping
+    win_map.insert(std::pair<Uint8, window*>(static_cast<Uint8>(SDL_GetWindowID(m_window)), this));
+
     m_renderer.create_sdl_renderer(m_window);
 
     // other attributes
@@ -134,7 +138,14 @@ bool window::is_visible() {
     return SDL_WINDOW_SHOWN & SDL_GetWindowFlags(m_window);
 }
 
+window * window::get(Uint8 id)
+{
+    auto it = win_map.find(id);
+    return (it != win_map.end()) ? it->second : 0;
+}
+
 void window::update() {
+
     m_renderer.clear();
     m_renderer.present();
 }
@@ -150,3 +161,4 @@ SDL_Window * window::sdl() {
 
     return m_window;
 }
+
