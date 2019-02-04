@@ -172,7 +172,7 @@ namespace wsdl2::event {
         struct e_resize : public e_window
         {
             using e_window::e_window;
-            e_move(const event_t& e) : e_window(e) {}
+            e_resize(const event_t& e) : e_window(e) {}
 
             mm::vec2<uint32_t> size();
         };
