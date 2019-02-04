@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mm/mmvec.hpp"
-#include <optional>
+#include <memory>
 
 extern "C" {
 #include <SDL2/SDL_events.h>
@@ -66,6 +66,7 @@ namespace wsdl2::event {
             virtual ~e_mouse() {}
 
             using event_t::event_t;
+            e_mouse(const event_t& e) : event_t(e) {}
 
             action_t action() const;
 
@@ -75,6 +76,7 @@ namespace wsdl2::event {
         struct e_button : public e_mouse
         {
             using e_mouse::e_mouse;
+            e_button(const event_t& e) : e_mouse(e) {}
 
             enum class button_t : unsigned
             {
@@ -95,6 +97,7 @@ namespace wsdl2::event {
         struct e_motion : public e_mouse 
         {
             using e_mouse::e_mouse;
+            e_motion(const event_t& e) : e_mouse(e) {}
 
             // delta (x, y)
             mm:vec2<int> movement() const;
@@ -105,6 +108,7 @@ namespace wsdl2::event {
         struct e_wheel : public e_mouse
         {
             using e_mouse::e_mouse;
+            e_wheel(const event_t& e) : e_mouse(e) {}
 
             int horizontal() const;
             int vertical() const;
@@ -117,6 +121,7 @@ namespace wsdl2::event {
     struct e_quit : public event_t
     {
         using event_t::event_t;
+        e_quit(const event_t& e) : event_t(e) {}
     };
 
     namespace window {
@@ -146,6 +151,7 @@ namespace wsdl2::event {
         {
 
             using event_t::event_t;
+            e_window(const event_t& e) : event_t(e) {}
 
             // TODO, mapping sdl window id with wsdl2 object
             wsdl2::window * window();
@@ -157,6 +163,7 @@ namespace wsdl2::event {
         struct e_move : public e_window
         {
             using e_window::e_window;
+            e_move(const event_t& e) : e_window(e) {}
 
             mm::vec2<uint32_t> position();
         };
@@ -165,6 +172,7 @@ namespace wsdl2::event {
         struct e_resize : public e_window
         {
             using e_window::e_window;
+            e_move(const event_t& e) : e_window(e) {}
 
             mm::vec2<uint32_t> size();
         };
@@ -174,3 +182,4 @@ namespace wsdl2::event {
 
     std::shared_ptr<event_t> poll_event();
 }
+

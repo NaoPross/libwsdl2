@@ -1,8 +1,6 @@
 #include "event.hpp"
 #include "video.hpp"
 
-#include <optional>
-
 extern "C" {
 #include <SDL2/SDL.h>
 }
