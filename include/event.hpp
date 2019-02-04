@@ -29,6 +29,9 @@ namespace wsdl2::event {
 
         event_t(const SDL_Event& e);
 
+        // polymorphic
+        virtual ~event_t() {}
+
         // copy constructor
         event_t(const event_t& e);
 
@@ -44,6 +47,7 @@ namespace wsdl2::event {
         };
 
         using event_t::event_t;
+        e_key(const event_t& e) : event_t(e) {}
 
         action_t action() const;
 
