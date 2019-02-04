@@ -29,6 +29,9 @@ namespace wsdl2::event {
 
         event_t(const SDL_Event& e);
 
+        // copy constructor
+        event_t(const event_t& e);
+
         SDL_EventType type() const;
     };
 
@@ -41,6 +44,7 @@ namespace wsdl2::event {
         };
 
         using event_t::event_t;
+        using event_t::event_t(const event_t& e);
 
         action_t action() const;
 
@@ -63,6 +67,7 @@ namespace wsdl2::event {
             virtual ~e_mouse() {}
 
             using event_t::event_t;
+            using event_t::event_t(const event_t& e);
 
             action_t action() const;
 
@@ -72,6 +77,7 @@ namespace wsdl2::event {
         struct e_button : public e_mouse
         {
             using e_mouse::e_mouse;
+            using event_t::event_t(const event_t& e);
 
             enum class button_t : unsigned
             {
@@ -92,6 +98,7 @@ namespace wsdl2::event {
         struct e_motion : public e_mouse 
         {
             using e_mouse::e_mouse;
+            using event_t::event_t(const event_t& e);
 
             // delta (x, y)
             mm:vec2<int> movement() const;
@@ -102,6 +109,7 @@ namespace wsdl2::event {
         struct e_wheel : public e_mouse
         {
             using e_mouse::e_mouse;
+            using event_t::event_t(const event_t& e);
 
             int horizontal() const;
             int vertical() const;
@@ -114,6 +122,7 @@ namespace wsdl2::event {
     struct e_quit : public event_t
     {
         using event_t::event_t;
+        using event_t::event_t(const event_t& e);
     };
 
     namespace window {
@@ -143,6 +152,7 @@ namespace wsdl2::event {
         {
 
             using event_t::event_t;
+            using event_t::event_t(const event_t& e);
 
             // TODO, mapping sdl window id with wsdl2 object
             wsdl2::window * window();
@@ -154,6 +164,7 @@ namespace wsdl2::event {
         struct e_move : public e_window
         {
             using e_window::e_window;
+            using event_t::event_t(const event_t& e);
 
             mm::vec2<uint32_t> position();
         };
@@ -162,6 +173,7 @@ namespace wsdl2::event {
         struct e_resize : public e_window
         {
             using e_window::e_window;
+            using event_t::event_t(const event_t& e);
 
             mm::vec2<uint32_t> size();
         };
@@ -169,5 +181,5 @@ namespace wsdl2::event {
 
     // TODO other handlers
 
-    std::optional<event_t> poll_event();
+    std::shared_ptr<event_t> poll_event();
 }
