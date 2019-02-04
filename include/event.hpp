@@ -104,7 +104,7 @@ namespace wsdl2::event {
             e_motion(const event_t& e) : e_mouse(e) {}
 
             // delta (x, y)
-            mm:vec2<int> movement() const;
+            mm::vec2<int> movement() const;
 
             virtual mm::vec2<int> location() const override;
         };
