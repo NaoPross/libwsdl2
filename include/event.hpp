@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mmvec.hpp"
+#include "mm/mmvec.hpp"
 #include <memory>
 
 extern "C" {
