@@ -12,7 +12,6 @@ extern "C" {
 
 using namespace wsdl2;
 
-std::map<Uint8, window*> win_map;
 
 /* class texture */
 
@@ -87,6 +86,10 @@ renderer::~renderer() {
 }
 
 /* class window */
+
+// existing window mapping (SDL_ID <-> window)
+std::map<Uint8, window*> window::win_map;
+
 
 window::window(const std::string& title, std::size_t width, std::size_t height) {
     // create (hidden) window
