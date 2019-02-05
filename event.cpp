@@ -11,7 +11,7 @@ event_t::event_t(const SDL_Event& e) : m_event(e) {}
 
 event_t::event_t(const event_t& e) : m_event(e.m_event) {}
 
-SDL_EventType event_t::type() const
+uint32_t event_t::type() const
 {
     return m_event.type;
 }
@@ -54,11 +54,11 @@ std::shared_ptr<event_t> poll_event() {
 
             switch (ev.window.event)
             {
-            case (SDL_WINDOWEVENT_MOVED)
+            case (SDL_WINDOWEVENT_MOVED):
                 return EV_PTR(window::e_move);
-            case (SDL_WINDOWEVENT_RESIZED)
+            case (SDL_WINDOWEVENT_RESIZED):
                 return EV_PTR(window::e_resize);
-            case (SDL_WINDOWEVENT_SIZE_CHANGED)
+            case (SDL_WINDOWEVENT_SIZE_CHANGED):
                 return EV_PTR(window::e_resize);
             default:
                 return EV_PTR(window::e_window);
@@ -95,7 +95,7 @@ mouse::action_t mouse::e_mouse::action() const
     return static_cast<mouse::action_t>(sdl().type);
 }
 
-mm::vec2<int> mouse::e_mouse::location() const;
+mm::vec2<int> mouse::e_mouse::location() const
 {
     // TODO
     return mm::vec2<int>({});

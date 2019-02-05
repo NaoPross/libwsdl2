@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mm/mmvec.hpp"
+#include "../../lib/include/mm/mmvec.hpp"
 #include <memory>
 
 extern "C" {
@@ -35,7 +35,7 @@ namespace wsdl2::event {
         // copy constructor
         event_t(const event_t& e);
 
-        SDL_EventType type() const;
+        uint32_t type() const;
     };
 
     struct e_key : public event_t
