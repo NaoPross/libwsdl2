@@ -4,8 +4,9 @@
 
 #include <string>
 #include <array>
-#include <map>
 #include <type_traits>
+#include <optional>
+#include <unordered_map>
 
 extern "C" {
 #include <SDL2/SDL_video.h>
@@ -17,6 +18,9 @@ namespace wsdl2 {
     class texture;
     class renderer;
     class window;
+    namespace event {
+        class event;
+    }
 
     // name aliases
     using rect = SDL_Rect;
@@ -172,12 +176,12 @@ namespace wsdl2 {
             draw_rect(rect {x, y, h, w});
         }
 
-        inline void draw_rect(const rect& rect) {
-            util::check(0 == SDL_RenderDrawRect(sdl(), &rect));
+        inline void draw_rect(const rect& r) {
+            util::check(0 == SDL_RenderDrawRect(sdl(), &r));
         }
 
-        inline void fill_rect(const rect& rect) {
-            util::check(0 == SDL_RenderFillRect(sdl(), &rect));
+        inline void fill_rect(const rect& r) {
+            util::check(0 == SDL_RenderFillRect(sdl(), &r));
         }
 
         // draw multiple elements
@@ -204,18 +208,18 @@ namespace wsdl2 {
 
         // overloaded drawing function
 
-        inline void draw(const point& p) { draw_point(p); }
-        inline void draw(const rect& r)  { draw_rect(r); }
-        inline void fill(const rect& r)  { fill_rect(r); }
+        inline void draw(point&& p) { draw_point(std::forward<point>(p)); }
+        inline void draw(rect&& r)  { draw_rect(std::forward<rect>(r)); }
+        inline void fill(rect&& r)  { fill_rect(std::forward<rect>(r)); }
 
         template<template<typename> typename Container>
-        inline void draw(const Container<point>& points) {
-            draw_points(points);
+        inline void draw(Container<point>&& points) {
+            draw_points(std::forward<Container<point>>(points));
         }
 
         template<template<typename> typename Container>
-        inline void draw(const Container<rect>& rects) {
-            draw_rects(rects);
+        inline void draw(Container<rect>&& rects) {
+            draw_rects(std::forward<Container<rect>>(rects));
         }
 
         template<template<typename> typename Container>
@@ -237,11 +241,9 @@ namespace wsdl2 {
 
     /// a basic wrapper around a SDL window
     class window {
-
-        static std::map<Uint8, window*> win_map;
-
     public:
         friend class renderer;
+        friend class event::event;
 
         window() = delete;
         window(const window& other) = delete;
@@ -265,14 +267,19 @@ namespace wsdl2 {
         renderer& get_renderer() { return m_renderer; }
         void update();
 
-        static window * get(Uint8 id);
+        static window& get(unsigned id);
 
     private:
         bool m_open;
-        renderer m_renderer;
         SDL_Window *m_window;
+        const unsigned m_id;
+
+        renderer m_renderer;
 
         // dirty C code
         SDL_Window* sdl();
+
+        // code used by events
+        static std::unordered_map<unsigned, window*> _windows;
     };
 }
