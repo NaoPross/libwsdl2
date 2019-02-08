@@ -104,7 +104,7 @@ namespace wsdl2 {
             else if (supported == 0)
                 return true;
 
-            util::check(supported);
+            util::check(supported >= -1);
             return false;
 
         }
