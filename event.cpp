@@ -20,7 +20,7 @@ std::shared_ptr<event_t> wsdl2::event::poll_event() {
 
     SDL_Event ev;
 
-#define EV_PTR(__type__) std::make_shared<event_t>(ev)
+#define EV_PTR(__type__) std::make_shared<__type__>(ev)
     
     using namespace wsdl2::event;
 
