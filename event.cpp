@@ -16,7 +16,7 @@ uint32_t event_t::type() const
     return m_event.type;
 }
 
-std::shared_ptr<event_t> poll_event() {
+std::shared_ptr<event_t> wsdl2::event::poll_event() {
 
     SDL_Event ev;
 
@@ -95,11 +95,31 @@ mouse::action_t mouse::e_mouse::action() const
     return static_cast<mouse::action_t>(sdl().type);
 }
 
-mm::vec2<int> mouse::e_mouse::location() const
+mm::vec2<int> mouse::e_button::location() const
 {
     // TODO
-    return mm::vec2<int>({});
+    return mm::vec2<int>({sdl().button.x, sdl().button.y});
 }
 
-// TODO other structures
-//
+mm::vec2<int> mouse::e_motion::location() const
+{
+    // TODO
+    return mm::vec2<int>({sdl().motion.x, sdl().motion.y});
+}
+
+mm::vec2<int> mouse::e_wheel::location() const
+{
+    // TODO
+    return mm::vec2<int>({sdl().wheel.x, sdl().wheel.y});
+}
+
+/*
+ * Window
+ */
+
+window::action_t window::e_window::action() const
+{
+    return static_cast<window::action_t>(sdl().window.event);
+}
+
+
