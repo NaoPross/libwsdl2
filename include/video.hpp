@@ -24,22 +24,37 @@ namespace wsdl2 {
 
     // name aliases
     using rect = SDL_Rect;
-    using point = SDL_Point;
+    /* equivalent to
+     * struct rect {
+     *     int x, y, w, h;
+     * };
+     */
 
-    struct color {
-        std::uint8_t r, g, b, a;
-    };
+    using point = SDL_Point;
+    /* equivalent to
+     * struct point {
+     *     int x, y;
+     * };
+     */
+
+    using color = SDL_Color;
+    /* equivalent to 
+     * struct color {
+     *     std::uint8_t r, g, b, a;
+     * };
+     */
 
     enum class blend_mode {
-        // TODO: map blend modes
-        unimplemented
+        none  = SDL_BLENDMODE_NONE,
+        blend = SDL_BLENDMODE_BLEND,
+        add   = SDL_BLENDMODE_ADD,
+        mod   = SDL_BLENDMODE_MOD,
     };
 
-    /// a graphic object allocated in the VRAM,
-    /// the CPU has not much control of this buffer
-    class texture {
+    /// stores informations about the pixel format
+    class pixelformat {
     public:
-        enum class pixformat : Uint32 {
+        enum class format: Uint32 {
             unknown     = SDL_PIXELFORMAT_UNKNOWN,
             index1lsb   = SDL_PIXELFORMAT_INDEX1LSB,
             index1msb   = SDL_PIXELFORMAT_INDEX1MSB,
@@ -73,23 +88,186 @@ namespace wsdl2 {
             argb2101010 = SDL_PIXELFORMAT_ARGB2101010,
         };
 
+        pixelformat(SDL_PixelFormat *p);
+
+        // TODO: access members
+
+    private:
+        SDL_PixelFormat *m_pixelformat;
+    };
+
+    /// a graphical object allocated in the RAM
+    class surface {
+    public:
+        surface() = delete;
+        virtual ~surface();
+        
+        surface(std::size_t width, std::size_t height, int depth = 24,
+                int rmask = 0, int gmask = 0, int bmask = 0, int amask = 0);
+
+        // TODO: constructor from raw pixels 
+        //       with SDL_CreateSurfaceFrom or SDL_CreateGBSurfaceWithFormatFrom or
+        //       with SDL_CreateRGBSurfaceFrom or SDL_CreateRGBSurfaceWithFormatFrom
+        // surface(void *pixels, ...)
+
+        // TODO: copy with SDL_BlitSurface(src, srect, dst, drect)
+        // surface(const surface& other);
+
+        /// make a surface from an image
+        // static surface from_bmp(path);
+        // static surface from_png(path);
+        // static surface from_jpg(path)
+
+        /// access members
+        inline int width() { return sdl()->w; }
+        inline int height() { return sdl()->h; }
+
+        inline rect clip() { return sdl()->clip_rect; }
+        inline bool clip(const rect& r) {
+            return (SDL_TRUE == SDL_SetClipRect(sdl(), &r));
+        }
+
+        /// copy a surface into another
+        inline static void blit(surface& src, surface& dest) {
+            // copies the entire surface src, into dest at (0,0)
+            util::check(0 == SDL_BlitSurface(src.sdl(), NULL, dest.sdl(), NULL));
+        }
+
+        inline static void blit(surface& src, rect& src_r, surface& dest, rect& dest_r) {
+            util::check(0 == SDL_BlitSurface(src.sdl(), &src_r, dest.sdl(), &dest_r));
+        }
+
+        inline static void blit_scaled(surface& src, surface& dest) {
+            // copies the entire surface src, into dest at (0,0)
+            util::check(0 == SDL_BlitScaled(src.sdl(), NULL, dest.sdl(), NULL));
+        }
+
+        inline static void blit_scaled(surface& src, rect& src_r, surface& dest, rect& dest_r) {
+            util::check(0 == SDL_BlitScaled(src.sdl(), &src_r, dest.sdl(), &dest_r));
+        }
+
+        inline void blit(surface& dest) {
+            blit(*this, dest);
+        }
+
+        inline void blit_scaled(surface& dest) {
+            blit_scaled(*this, dest);
+        }
+
+        /// fill a rectangle
+        inline void fill_rect(const rect& r, const color& c) {
+            util::check(0 == SDL_FillRect(sdl(), &r, 
+                SDL_MapRGBA(sdl()->format, c.r, c.g, c.b, c.a)
+            ));
+        }
+
+        inline void fill_rect(const rect& re, uint8_t r, uint8_t g, uint8_t b) {
+            util::check(0 == SDL_FillRect(sdl(), &re, 
+                SDL_MapRGB(sdl()->format, r, g, b)
+            ));
+        }
+
+        /// fill many rectangles
+        template<template<typename> typename Container>
+        inline void fill_rects(const Container<rect>& rects, const color& c) {
+            util::check(0 == SDL_RenderFillRects(sdl(), rects.data(), rects.size(),
+                SDL_MapRGBA(sdl()->format, c.r, c.g, c.b, c.a)
+            ));
+        }
+
+        template<template<typename> typename Container>
+        inline void fill_rects(const Container<rect>& rects, uint8_t r, uint8_t g, uint8_t b) {
+            util::check(0 == SDL_RenderFillRects(sdl(), rects.data(), rects.size(),
+                SDL_MapRGB(sdl()->format, r, g, b)
+            ));
+        }
+
+        /// fill the entire surface
+        inline void fill(const color& c) {
+            util::check(0 == SDL_FillRect(sdl(), NULL, 
+                SDL_MapRGBA(sdl()->format, c.r, c.g, c.b, c.a)
+            ));
+        }
+
+        inline void fill(uint8_t r, uint8_t g, uint8_t b) {
+            util::check(0 == SDL_FillRect(sdl(), NULL, 
+                SDL_MapRGB(sdl()->format, r, g, b)
+            ));
+        }
+
+        /// memory locking and unlocking for pixels()
+        inline void unlock() { SDL_UnlockSurface(sdl()); }
+        inline void lock() {
+            util::check(0 == SDL_LockSurface(sdl()));
+        }
+
+        inline bool mustlock() {
+            return (SDL_MUSTLOCK(m_surface) == SDL_TRUE);
+        }
+
+        /// set alpha
+        inline bool alpha(std::uint8_t val) {
+            int supported = SDL_SetSurfaceAlphaMod(sdl(), val);
+            if (supported == -1)
+                return false;
+            else if (supported == 0)
+                return true;
+
+            util::check(supported >= -1);
+            return false;
+
+        }
+
+        inline std::uint8_t alpha() {
+            std::uint8_t val;
+            util::check(0 == SDL_GetSurfaceAlphaMod(sdl(), &val));
+
+            return val;
+        }
+
+        
+        // how about we don't allow this
+        // void * pixels()
+
+        /// to enable RLE optimization
+        inline void use_rle(bool enable) {
+            util::check(0 == SDL_SetSurfaceRLE(sdl(), enable));
+        }
+
+        // TODO: finish pixelformat
+        // SDL_Surface convert(pixelformat f);
+
+    private:
+        SDL_Surface *m_surface;
+
+        // dirty C code
+        SDL_Surface* sdl();
+    };
+
+
+    /// a graphic object allocated in the VRAM,
+    class texture {
+    public:
         enum class access : int {
             static_ = SDL_TEXTUREACCESS_STATIC,
             streaming = SDL_TEXTUREACCESS_STREAMING,
             target = SDL_TEXTUREACCESS_TARGET
         };
 
-        const pixformat _format;
-        const access _access;
+        const pixelformat::format format;
+        const access access_;
 
         texture() = delete;
 
         // TODO: create a texture copy constructor?
         texture(const texture& other) = delete;
+        // TODO: create move constructor
+        texture(texture&& other) = default;
         // TODO: create surface wrapper class
         // texture(const surface& surf);
 
-        texture(renderer& r, pixformat p, access a, std::size_t width, std::size_t height);
+        texture(renderer& r, pixelformat::format p, access a,
+                std::size_t width, std::size_t height);
         virtual ~texture();
 
         /// lock a portion to be write-only
@@ -109,7 +287,7 @@ namespace wsdl2 {
 
         }
 
-        inline std::uint8_t alpha() {
+        inline std::uint8_t alpha() const {
             std::uint8_t val;
             util::check(0 == SDL_GetTextureAlphaMod(m_texture, &val));
 
@@ -124,6 +302,7 @@ namespace wsdl2 {
         SDL_Texture* sdl();
     };
 
+
     /// the guy who does the actual hard stuff
     class renderer {
     public:
@@ -134,6 +313,7 @@ namespace wsdl2 {
         renderer(texture& t);
         virtual ~renderer();
 
+        // TODO
         inline void set_target() {}
         inline void clear() { SDL_RenderClear(sdl()); }
         inline void present() { SDL_RenderPresent(sdl()); }
@@ -225,6 +405,11 @@ namespace wsdl2 {
         template<template<typename> typename Container>
         inline void fill(const Container<rect>& rects) {
             fill_rects(rects);
+        }
+
+        // fill the entire texture
+        inline void fill() {
+            util::check(0 == SDL_RenderFillRect(sdl(), NULL));
         }
 
 

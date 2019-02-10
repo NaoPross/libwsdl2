@@ -9,13 +9,48 @@ extern "C" {
 
 using namespace wsdl2;
 
+/* class surface */
+
+surface::surface(std::size_t width, std::size_t height, int depth /* = 24 */,
+    int rmask /* = 0 */, int gmask /* = 0 */, int bmask /* = 0 */, int amask /* = 0 */
+) {
+    m_surface = SDL_CreateRGBSurface(0,
+        static_cast<int>(width),
+        static_cast<int>(height),
+        depth, rmask, gmask, bmask, amask
+    );
+
+    if (m_surface == NULL) {
+        throw std::runtime_error("failed to create SDL_Surface");
+    }
+}
+
+surface::~surface() {
+    if (m_surface != NULL)
+        SDL_FreeSurface(m_surface);
+}
+
+
+SDL_Surface* surface::sdl() {
+#ifdef DEBUG
+    if (m_surface == NULL) {
+        throw std::runtime_error(
+            "attempted to call texture::sdl() when m_texture is NULL"
+        );
+    }
+#endif
+
+    return m_surface;
+}
+
+
 
 /* class texture */
 
-texture::texture(renderer& r, texture::pixformat p, texture::access a,
+texture::texture(renderer& r, pixelformat::format p, texture::access a,
                  std::size_t width, std::size_t height)
 
-    : _format(p), _access(a), m_renderer(r)
+    : format(p), access_(a), m_renderer(r)
 {
     m_texture = SDL_CreateTexture(r.m_renderer, 
         static_cast<Uint32>(p), static_cast<int>(a), 
@@ -131,7 +166,6 @@ bool window::is_visible() {
 }
 
 void window::update() {
-
     m_renderer.clear();
     m_renderer.present();
 }
