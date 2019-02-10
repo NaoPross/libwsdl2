@@ -3,5 +3,7 @@ build
 .ninja*
 build.ninja
 
+Makefile
+
 **/*.swp
 **/*.sublime*

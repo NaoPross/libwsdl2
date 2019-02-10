@@ -2,9 +2,6 @@
 #include "debug.hpp"
 
 #include <exception>
-#include <cstdint>
-
-#include <vector>
 
 extern "C" {
 #include <SDL2/SDL.h>
@@ -12,13 +9,48 @@ extern "C" {
 
 using namespace wsdl2;
 
+/* class surface */
+
+surface::surface(std::size_t width, std::size_t height, int depth /* = 24 */,
+    int rmask /* = 0 */, int gmask /* = 0 */, int bmask /* = 0 */, int amask /* = 0 */
+) {
+    m_surface = SDL_CreateRGBSurface(0,
+        static_cast<int>(width),
+        static_cast<int>(height),
+        depth, rmask, gmask, bmask, amask
+    );
+
+    if (m_surface == NULL) {
+        throw std::runtime_error("failed to create SDL_Surface");
+    }
+}
+
+surface::~surface() {
+    if (m_surface != NULL)
+        SDL_FreeSurface(m_surface);
+}
+
+
+SDL_Surface* surface::sdl() {
+#ifdef DEBUG
+    if (m_surface == NULL) {
+        throw std::runtime_error(
+            "attempted to call texture::sdl() when m_texture is NULL"
+        );
+    }
+#endif
+
+    return m_surface;
+}
+
+
 
 /* class texture */
 
-texture::texture(renderer& r, texture::pixformat p, texture::access a,
+texture::texture(renderer& r, pixelformat::format p, texture::access a,
                  std::size_t width, std::size_t height)
 
-    : _format(p), _access(a), m_renderer(r)
+    : format(p), access_(a), m_renderer(r)
 {
     m_texture = SDL_CreateTexture(r.m_renderer, 
         static_cast<Uint32>(p), static_cast<int>(a), 
@@ -29,8 +61,6 @@ texture::texture(renderer& r, texture::pixformat p, texture::access a,
 texture::~texture() {
     if (m_texture != NULL)
         SDL_DestroyTexture(m_texture);
-    else
-        npdebug("warning: m_texture is NULL");
 }
 
 SDL_Texture* texture::sdl() {
@@ -44,6 +74,7 @@ SDL_Texture* texture::sdl() {
 
     return m_texture;
 }
+
 
 /* class renderer */
 
@@ -81,45 +112,38 @@ renderer::renderer(window& w) {
 renderer::~renderer() {
     if (m_renderer != NULL)
         SDL_DestroyRenderer(m_renderer);
-    else
-        npdebug("warning: m_renderer is NULL")
 }
+
 
 /* class window */
 
-// existing window mapping (SDL_ID <-> window)
-std::map<Uint8, window*> window::win_map;
-
-
-window::window(const std::string& title, std::size_t width, std::size_t height) {
-    // create (hidden) window
-    m_window = SDL_CreateWindow(
-        title.c_str(),
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        static_cast<int>(width),
-        static_cast<int>(height),
-        SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN
-    );
-
-    if (m_window == NULL) {
-        throw std::runtime_error("failed to create SDL window");
-    }
-
+window::window(const std::string& title, std::size_t width, std::size_t height)
+    : m_open(false),
+      // create (hidden) window
+      m_window(SDL_CreateWindow(
+          title.c_str(),
+          SDL_WINDOWPOS_CENTERED,
+          SDL_WINDOWPOS_CENTERED,
+          static_cast<int>(width),
+          static_cast<int>(height),
+          SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN
+      )),
+      m_id(SDL_GetWindowID(m_window))
+{
     // put into window id mapping
-    win_map.insert(std::pair<Uint8, window*>(static_cast<Uint8>(SDL_GetWindowID(m_window)), this));
+    _windows.insert({m_id, this});
 
+    // create renderer
     m_renderer.create_sdl_renderer(m_window);
-
-    // other attributes
-    m_open = false;
 }
 
 window::~window() {
+    // remove from window id mapping
+    _windows.erase(m_id);
+
+    // destroy window
     if (m_window != NULL)
         SDL_DestroyWindow(m_window);
-    else
-        npdebug("warning: m_window is NULL")
 }
 
 
@@ -141,14 +165,7 @@ bool window::is_visible() {
     return SDL_WINDOW_SHOWN & SDL_GetWindowFlags(m_window);
 }
 
-window * window::get(Uint8 id)
-{
-    auto it = win_map.find(id);
-    return (it != win_map.end()) ? it->second : 0;
-}
-
 void window::update() {
-
     m_renderer.clear();
     m_renderer.present();
 }
@@ -163,5 +180,11 @@ SDL_Window * window::sdl() {
 #endif
 
     return m_window;
+}
+
+/* static members for class window */
+window& window::get(unsigned id)
+{
+    return *window::_windows[id];
 }
 

@@ -1,4 +1,4 @@
-#include "debug.hpp"
+#include "../debug.hpp"
 
 extern "C" {
 #include <SDL2/SDL_error.h>
