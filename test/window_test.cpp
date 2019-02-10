@@ -7,8 +7,9 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <type_traits>
 
-int main(int argc, char *argv[]) {
+int main() {
 
     using namespace wsdl2;
 
@@ -22,10 +23,20 @@ int main(int argc, char *argv[]) {
     std::thread win_update([&]() {
         std::lock_guard<std::mutex> lock(win_mutex);
         do {
+            auto event = event::poll();
+            if (event) {
+                std::visit([&](auto& arg) {
+                    using T = std::decay_t<decltype(arg)>;
+                    
+                    if constexpr (std::is_same_v<T, event::quit>) {
+                        win.close();
+                    }
+                }, *event);
+            }
 
             win.update();
             // ~60 fps test
-            wsdl2::delay(1000.0/60.0);
+            wsdl2::delay(static_cast<unsigned>(1000.0/60.0));
         } while (win.is_open());
     });
 

@@ -55,6 +55,7 @@ solution("wrapsdl2")
 
         configuration("release")
             targetdir("build/release")
+            defines({ "WSDL2_USE_MM" })
             flags("OptimizeSpeed")
 
     -- tests
