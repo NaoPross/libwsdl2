@@ -23,16 +23,17 @@ solution("wrapsdl2")
 
     local libs = {
         sdl = os.findlib("SDL2"),
-        mm = os.findlib("libmm"),
+        pthreads = os.findlib("pthread"),
+        -- mm = os.findlib("mm"),
     }
 
     for k, v in pairs(libs) do
         io.write("library " ..k.. " ")
-        if v ~= nil then
-            print("found under " ..v)
-        else
+        if v == nil then
             print("not found!")
             os.exit(1)
+        else
+            print("found under " ..v)
         end
     end
 
@@ -45,9 +46,11 @@ solution("wrapsdl2")
         files("*.cpp")
         includedirs({"./", "include"})
 
+        links({ "SDL2" })
+
         configuration("debug")
             targetdir("build/debug")
-            defines("DEBUG")
+            defines({ "DEBUG", "WSDL2_USE_MM" })
             flags("Symbols")
 
         configuration("release")
@@ -63,7 +66,7 @@ solution("wrapsdl2")
         files("test/*.cpp")
         includedirs("include")
 
-        links("wsdl2")
+        links({ "wsdl2", "SDL2", "pthread" })
 
         configuration("debug")
             targetdir("build/debug")
