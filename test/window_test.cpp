@@ -25,11 +25,28 @@ int main() {
         do {
             auto event = event::poll();
             if (event) {
-                std::visit([&](auto& arg) {
-                    using T = std::decay_t<decltype(arg)>;
+                std::visit([&](auto& e) {
+                    using T = std::decay_t<decltype(e)>;
                     
                     if constexpr (std::is_same_v<T, event::quit>) {
                         win.close();
+                    }
+                    
+                    if constexpr (std::is_same_v<T, event::key>) {
+                        if (e.type == event::key::action::up) {
+                            // TODO: map SDLKs and SDL_SCANCODEs
+                            if (e.keysym.sym == SDLK_ESCAPE) {
+                                win.close();
+                            }
+                        }
+                    }
+
+                    if constexpr (std::is_same_v<T, event::mouse::button>) {
+                        if (e.type == event::mouse::button::action::down) {
+                            std::cout << "you clicked at ("
+                                      << e.x << ", " << e.y
+                                      << ")\n";
+                        }
                     }
                 }, *event);
             }
