@@ -59,12 +59,31 @@ solution("wrapsdl2")
             flags("OptimizeSpeed")
 
     -- tests
-    project("window-test")
+    project("wsdl2-test-window")
         kind("ConsoleApp")
         language("C++")
         location("build")
 
-        files("test/*.cpp")
+        files("test/window_test.cpp")
+        includedirs("include")
+
+        links({ "wsdl2", "SDL2" })
+
+        configuration("debug")
+            targetdir("build/debug")
+            defines("DEBUG")
+            flags("Symbols")
+
+        configuration("release")
+            targetdir("build/release")
+            flags("OptimizeSpeed")
+
+    project("wsdl2-test-threaded-window")
+        kind("ConsoleApp")
+        language("C++")
+        location("build")
+
+        files("test/threaded_window_test.cpp")
         includedirs("include")
 
         links({ "wsdl2", "SDL2", "pthread" })
