@@ -117,6 +117,9 @@ renderer::~renderer() {
 
 /* class window */
 
+// code used by events
+std::unordered_map<unsigned, window*> window::_windows;
+
 window::window(const std::string& title, std::size_t width, std::size_t height)
     : m_open(false),
       // create (hidden) window

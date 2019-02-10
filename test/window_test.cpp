@@ -22,23 +22,6 @@ int main(int argc, char *argv[]) {
     std::thread win_update([&]() {
         std::lock_guard<std::mutex> lock(win_mutex);
         do {
-            std::optional<event> ev = poll_event();
-            if (ev.has_value()) {
-                event& event = ev.value();
-
-                // TODO: remove this sdl code
-                if (event.sdl().type == SDL_WINDOWEVENT) {
-                    if (event.sdl().window.event == SDL_WINDOWEVENT_CLOSE) {
-                        npdebug("SDL_WINDOWEVENT_CLOSE")
-                        win.close();
-                    }
-                }
-
-                if (event.sdl().type == SDL_QUIT) {
-                    npdebug("SDL_QUIT");
-                    win.close();
-                }
-            }
 
             win.update();
             // ~60 fps test
