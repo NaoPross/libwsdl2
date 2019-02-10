@@ -6,9 +6,19 @@ project(
     LANGUAGES CXX
 )
 
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
+# if ("${CMAKE_SYSTEM}" MATCHES "Linux")
+#     list(INSERT CMAKE_MODULE_PATH 0 /usr/local/lib/cmake/)
+# endif ()
+
+
 ############################
 # find dependencies
 find_package(SDL2 REQUIRED)
+find_package(MM
+    PATHS
+        $<$<CMAKE_SYSTEM:Linux>:/usr/local/lib/cmake/>
+)
 
 ############################
 # libwsdl2
@@ -17,6 +27,8 @@ add_library(wsdl2 STATIC
     video.cpp
     wrapsdl2.cpp
 )
+
+add_library(WSDL2::wsdl2 ALIAS wsdl2)
 
 # set up headers
 target_include_directories(wsdl2
@@ -71,6 +83,21 @@ target_link_libraries(wsdl2
     PUBLIC
         SDL2
 )
+
+if (MM_LIB)
+    message("Building with libmm support")
+    target_compile_definitions(wsdl2
+        PRIVATE
+            WSDL2_USE_MM
+    )
+
+    target_link_libraries(wsdl2
+        PUBLIC
+            MM
+    )
+else ()
+    message("Building without libmm support")
+endif ()
 
 ############################
 # installation

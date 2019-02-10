@@ -1,6 +1,7 @@
 get_filename_component(WSDL2_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
 find_dependency(SDL2 REQUIRED)
+find_dependency(MM)
 list(REMOVE_AT CMAKE_MODULE_PATH -1)
 
 if (NOT TARGET WSDL2::WSDL2)
