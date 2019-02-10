@@ -1,0 +1,10 @@
+get_filename_component(WSDL2_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+find_dependency(SDL2 REQUIRED)
+list(REMOVE_AT CMAKE_MODULE_PATH -1)
+
+if (NOT TARGET WSDL2::WSDL2)
+    include("${WSDL2_CMAKE_DIR}/WSDL2Targets.cmake")
+endif()
+
+set(WSDL2_LIBRARIES WSDL2::WSDL2)
