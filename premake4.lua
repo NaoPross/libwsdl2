@@ -3,7 +3,7 @@ solution("wrapsdl2")
     configurations({ "debug", "release" })
 
     -- TODO: remove libmm relative path
-    includedirs("../libmm/include")
+    -- includedirs("../libmm/include")
 
     -- global build flags
     flags({ "ExtraWarnings" })
@@ -19,8 +19,6 @@ solution("wrapsdl2")
         })
 
     -- libraries
-    libdirs({".."})
-
     local libs = {
         sdl = os.findlib("SDL2"),
         pthreads = os.findlib("pthread"),
@@ -50,7 +48,7 @@ solution("wrapsdl2")
 
         configuration("debug")
             targetdir("build/debug")
-            defines({ "DEBUG", "WSDL2_USE_MM" })
+            defines({ "DEBUG" })
             flags("Symbols")
 
         configuration("release")

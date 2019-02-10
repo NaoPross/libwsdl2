@@ -1,9 +1,16 @@
 #pragma once
 
+#ifdef WSDL2_USE_MM
 #include "mm/mmvec.hpp"
+#endif 
+
 #include <memory>
 #include <optional>
 #include <variant>
+
+#ifdef DEBUG
+#include <cassert>
+#endif
 
 extern "C" {
 #include <SDL2/SDL_events.h>
