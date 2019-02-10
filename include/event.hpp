@@ -67,8 +67,9 @@ namespace wsdl2::event {
         static inline quit from_event(const SDL_Event& e) {
             static_assert(sizeof(quit) == sizeof(SDL_QuitEvent));
             static_assert(alignof(quit) == alignof(SDL_QuitEvent));
-
+#ifdef DEBUG
             assert(e.type == SDL_QUIT);
+#endif
             // TODO: test the shit out of this
             return *reinterpret_cast<const quit*>(&e.quit);
         }
@@ -96,7 +97,9 @@ namespace wsdl2::event {
             static_assert(sizeof(key) == sizeof(SDL_KeyboardEvent));
             static_assert(alignof(key) == alignof(SDL_KeyboardEvent));
 
+#ifdef DEBUG
             assert((e.type == SDL_KEYDOWN) || (e.type == SDL_KEYUP));
+#endif
             // TODO: test the shit out of this
             return *reinterpret_cast<const key*>(&e.key);
         }
@@ -124,8 +127,10 @@ namespace wsdl2::event {
                 static_assert(sizeof(button) == sizeof(SDL_MouseButtonEvent));
                 static_assert(alignof(button) == alignof(SDL_MouseButtonEvent));
 
+#ifdef DEBUG
                 assert((e.type == SDL_MOUSEBUTTONUP) 
                     || (e.type == SDL_MOUSEBUTTONDOWN));
+#endif
 
                 // TODO: test the shit out of this
                 return *reinterpret_cast<const button*>(&e.button);
@@ -164,7 +169,9 @@ namespace wsdl2::event {
                 static_assert(sizeof(motion) == sizeof(SDL_MouseMotionEvent));
                 static_assert(alignof(motion) == alignof(SDL_MouseMotionEvent));
 
+#ifdef DEBUG
                 assert(e.type == SDL_MOUSEMOTION);
+#endif
                 // TODO: test the shit out of this
                 return *reinterpret_cast<const motion*>(&e.motion);
             }
@@ -201,7 +208,9 @@ namespace wsdl2::event {
                 static_assert(sizeof(wheel) == sizeof(SDL_MouseWheelEvent));
                 static_assert(alignof(wheel) == alignof(SDL_MouseWheelEvent));
 
+#ifdef DEBUG
                 assert(e.type == SDL_MOUSEWHEEL);
+#endif
                 // TODO: test the shit out of this
                 return *reinterpret_cast<const wheel*>(&e.wheel);
             }
@@ -251,8 +260,10 @@ namespace wsdl2::event {
                     // static_assert(sizeof(Derived) == sizeof(SDL_WindowEvent));
                     // static_assert(alignof(Derived) == alignof(SDL_WindowEvent));
 
+#ifdef DEBUG
                     assert(e.type == SDL_WINDOWEVENT);
                     assert(static_cast<action>(e.window.event) == Action);
+#endif
                     // TODO: test the shit out of this
                     return *reinterpret_cast<const Derived*>(&e.window);
                 }
