@@ -7,25 +7,35 @@ project(
 )
 
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
-# if ("${CMAKE_SYSTEM}" MATCHES "Linux")
-#     list(INSERT CMAKE_MODULE_PATH 0 /usr/local/lib/cmake/)
-# endif ()
-
 
 ############################
 # find dependencies
 find_package(SDL2 REQUIRED)
+
+# optional dependencies
 find_package(MM
-    PATHS
+    HINTS
         $<$<CMAKE_SYSTEM:Linux>:/usr/local/lib/cmake/>
 )
+
+if (NOT MM-NOTFOUND)
+    message("Building with libmm support")
+endif ()
+
+find_package(Threads)
+
+if (NOT Threads-NOTFOUND)
+    message("Build with threaded test support")
+endif()
+
+
 
 ############################
 # libwsdl2
 add_library(wsdl2 STATIC
-    event.cpp
-    video.cpp
-    wrapsdl2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/event.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/video.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/wrapsdl2.cpp
 )
 
 add_library(WSDL2::wsdl2 ALIAS wsdl2)
@@ -81,11 +91,10 @@ target_compile_features(wsdl2
 # set up required libraries
 target_link_libraries(wsdl2
     PUBLIC
-        SDL2
+        ${SDL2_LIBRARIES}
 )
 
-if (DEFINED MM_DIR)
-    message("Building with libmm support")
+if (NOT MM-NOTFOUND)
     target_compile_definitions(wsdl2
         PRIVATE
             WSDL2_USE_MM
@@ -95,8 +104,6 @@ if (DEFINED MM_DIR)
         PRIVATE
             ${MM_LIBRARIES}
     )
-else ()
-    message("Building without libmm support")
 endif ()
 
 ###########################
@@ -107,10 +114,10 @@ enable_testing()
 
 # window_test                                                                     
 add_executable(window_test test/window_test.cpp)                                    
-                                                                                
+
 target_link_libraries(window_test 
     PRIVATE  
-        wsdl2 
+        WSDL2::wsdl2
 ) 
 
 target_compile_features(window_test
@@ -124,36 +131,41 @@ target_compile_features(window_test
 #)
 
                                                                                 
-add_test(   NAME window_test 
-            CONFIGURATIONS Debug  
-            WORKING_DIRECTORY test 
-            COMMAND window_test 
+add_test(
+    NAME window_test 
+    CONFIGURATIONS Debug  
+    WORKING_DIRECTORY test 
+    COMMAND window_test 
 )      
 
-# threaded_window_test                                                                     
-add_executable(threaded_window_test test/threaded_window_test.cpp)                                    
-                                                                                
-target_link_libraries(threaded_window_test 
-    PRIVATE  
-        wsdl2 
-        pthread
-) 
 
-target_compile_features(threaded_window_test
-    PRIVATE
-        cxx_std_17
-)
+if (NOT Threads-NOTFOUND)
+    # threaded_window_test                                                                     
+    add_executable(threaded_window_test test/threaded_window_test.cpp)                                    
+                                                                                    
+    target_link_libraries(threaded_window_test 
+        PRIVATE  
+            WSDL2::wsdl2
+            Threads::Threads
+    ) 
 
-#target_include_directories(threaded_window_test
-#    PRIVATE
-#        ${CMAKE_CURRENT_DIR}/include
-#)
-                                                                               
-add_test(   NAME threaded_window_test 
-            CONFIGURATIONS Debug  
-            WORKING_DIRECTORY test 
-            COMMAND threaded_window_test 
-) 
+    target_compile_features(threaded_window_test
+        PRIVATE
+            cxx_std_17
+    )
+
+    # target_include_directories(threaded_window_test
+    #     PRIVATE
+    #         ${CMAKE_CURRENT_DIR}/include
+    # )
+                                                                                   
+    add_test(
+        NAME threaded_window_test 
+        CONFIGURATIONS Debug  
+        WORKING_DIRECTORY test 
+        COMMAND threaded_window_test 
+    ) 
+endif ()
 
 ############################
 # installation
@@ -168,18 +180,17 @@ install(TARGETS wsdl2
 
 set_target_properties(wsdl2 PROPERTIES EXPORT_NAME WSDL2)
 
-if ("${CMAKE_SYSTEM}" MATCHES "Linux")
-
-file(GLOB INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/*")
-
 # install public headers
-install(FILES  ${INCLUDE_FILES}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+install(
+    FILES  
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/event.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/util.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/video.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/wsdl2.hpp
+    DESTINATION
+        ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-endif()
-
-# TODO, install setup for windows too
 
 # export targets
 install(EXPORT wsdl2-targets
