@@ -93,7 +93,7 @@ if (DEFINED MM_DIR)
 
     target_link_libraries(wsdl2
         PRIVATE
-            MM
+            ${MM_LIBRARIES}
     )
 else ()
     message("Building without libmm support")
