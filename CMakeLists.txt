@@ -32,7 +32,7 @@ endif()
 
 ############################
 # libwsdl2
-add_library(wsdl2 STATIC
+add_library(wsdl2 SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/event.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/video.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/wrapsdl2.cpp
