@@ -265,6 +265,22 @@ namespace wsdl2 {
         inline void clear() { SDL_RenderClear(sdl()); }
         inline void present() { SDL_RenderPresent(sdl()); }
 
+        // viewport
+        inline void reset_viewport() {
+            util::check(0 == SDL_RenderSetViewport(sdl(), NULL));
+        }
+
+        inline void viewport(const rect& v) {
+            util::check(0 == SDL_RenderSetViewport(sdl(), &v));
+        }
+
+        inline rect viewport() {
+            rect r;
+            SDL_RenderGetViewport(sdl(), &r);
+
+            return r;
+        }
+
         // set color
 
         inline void set_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a) {
