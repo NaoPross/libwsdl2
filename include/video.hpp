@@ -245,69 +245,17 @@ namespace wsdl2 {
     };
 
 
-    /// a graphic object allocated in the VRAM,
-    class texture {
-    public:
-        enum class access : int {
-            static_ = SDL_TEXTUREACCESS_STATIC,
-            streaming = SDL_TEXTUREACCESS_STREAMING,
-            target = SDL_TEXTUREACCESS_TARGET
-        };
-
-        const pixelformat::format format;
-        const access access_;
-
-        texture() = delete;
-
-        // TODO: create a texture copy constructor?
-        texture(const texture& other) = delete;
-        // TODO: create move constructor
-        texture(texture&& other) = default;
-        // TODO: create surface wrapper class
-        // texture(const surface& surf);
-
-        texture(renderer& r, pixelformat::format p, access a,
-                std::size_t width, std::size_t height);
-        virtual ~texture();
-
-        /// lock a portion to be write-only
-        // TODO: needs surface wrapper class
-        // bool lock(const rect& region, const surface&);
-        inline void unlock() { SDL_UnlockTexture(m_texture); }
-
-        inline bool alpha(std::uint8_t val) {
-            int supported = SDL_SetTextureAlphaMod(m_texture, val);
-            if (supported == -1)
-                return false;
-            else if (supported == 0)
-                return true;
-
-            util::check(supported >= -1);
-            return false;
-
-        }
-
-        inline std::uint8_t alpha() const {
-            std::uint8_t val;
-            util::check(0 == SDL_GetTextureAlphaMod(m_texture, &val));
-
-            return val;
-        }
-
-    private:
-        renderer& m_renderer;
-        SDL_Texture *m_texture;
-
-        // dirty C code
-        SDL_Texture* sdl();
-    };
-
-
     /// the guy who does the actual hard stuff
     class renderer {
     public:
         friend class window;
         friend class texture;
+
+        enum class flip {
+            none       = SDL_FLIP_NONE,
+            horizontal = SDL_FLIP_HORIZONTAL,
+            vertical   = SDL_FLIP_VERTICAL,
+        };
 
         renderer(window& w);
         renderer(texture& t);
@@ -421,6 +369,86 @@ namespace wsdl2 {
 
         // dirty C code
         SDL_Renderer* sdl();
+    };
+
+
+    /// a graphic object allocated in the VRAM,
+    class texture {
+    public:
+        enum class access : int {
+            static_ = SDL_TEXTUREACCESS_STATIC,
+            streaming = SDL_TEXTUREACCESS_STREAMING,
+            target = SDL_TEXTUREACCESS_TARGET
+        };
+
+        const pixelformat::format format;
+        const access access_;
+
+        texture() = delete;
+
+        // TODO: create a texture copy constructor?
+        texture(const texture& other) = delete;
+        // TODO: create move constructor
+        texture(texture&& other) = default;
+        // TODO: create surface wrapper class
+        // texture(const surface& surf);
+
+        texture(renderer& r, pixelformat::format p, access a,
+                std::size_t width, std::size_t height);
+        virtual ~texture();
+
+        inline void render() {
+            util::check(0 == SDL_RenderCopy(
+                m_renderer.sdl(), m_texture, NULL, NULL
+            ));
+        }
+
+        inline void render(rect& src, rect& dest) {
+            util::check(0 == SDL_RenderCopy(
+                m_renderer.sdl(), m_texture, &src, &dest
+            ));
+        }
+
+        inline void render(rect& src, rect& dest, 
+            const double angle, const point& center, renderer::flip flip)
+        {
+            util::check(0 == SDL_RenderCopyEx(
+                m_renderer.sdl(), m_texture,
+                &src, &dest, angle, &center,
+                static_cast<SDL_RendererFlip>(flip)
+            ));
+        }
+
+        /// lock a portion to be write-only
+        // TODO: needs surface wrapper class
+        // bool lock(const rect& region, const surface&);
+        inline void unlock() { SDL_UnlockTexture(m_texture); }
+
+        inline bool alpha(std::uint8_t val) {
+            int supported = SDL_SetTextureAlphaMod(m_texture, val);
+            if (supported == -1)
+                return false;
+            else if (supported == 0)
+                return true;
+
+            util::check(supported >= -1);
+            return false;
+
+        }
+
+        inline std::uint8_t alpha() const {
+            std::uint8_t val;
+            util::check(0 == SDL_GetTextureAlphaMod(m_texture, &val));
+
+            return val;
+        }
+
+    private:
+        renderer& m_renderer;
+        SDL_Texture *m_texture;
+
+        // dirty C code
+        SDL_Texture* sdl();
     };
 
 

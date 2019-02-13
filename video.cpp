@@ -45,37 +45,6 @@ SDL_Surface* surface::sdl() {
 
 
 
-/* class texture */
-
-texture::texture(renderer& r, pixelformat::format p, texture::access a,
-                 std::size_t width, std::size_t height)
-
-    : format(p), access_(a), m_renderer(r)
-{
-    m_texture = SDL_CreateTexture(r.m_renderer, 
-        static_cast<Uint32>(p), static_cast<int>(a), 
-        static_cast<int>(width), static_cast<int>(height)
-    );
-}
-
-texture::~texture() {
-    if (m_texture != NULL)
-        SDL_DestroyTexture(m_texture);
-}
-
-SDL_Texture* texture::sdl() {
-#ifdef DEBUG
-    if (m_texture == NULL) {
-        throw std::runtime_error(
-            "attempted to call texture::sdl() when m_texture is NULL"
-        );
-    }
-#endif
-
-    return m_texture;
-}
-
-
 /* class renderer */
 
 renderer::renderer() {
@@ -113,6 +82,40 @@ renderer::~renderer() {
     if (m_renderer != NULL)
         SDL_DestroyRenderer(m_renderer);
 }
+
+
+
+/* class texture */
+
+texture::texture(renderer& r, pixelformat::format p, texture::access a,
+                 std::size_t width, std::size_t height)
+
+    : format(p), access_(a), m_renderer(r)
+{
+    m_texture = SDL_CreateTexture(r.m_renderer, 
+        static_cast<Uint32>(p), static_cast<int>(a), 
+        static_cast<int>(width), static_cast<int>(height)
+    );
+}
+
+texture::~texture() {
+    if (m_texture != NULL)
+        SDL_DestroyTexture(m_texture);
+}
+
+SDL_Texture* texture::sdl() {
+#ifdef DEBUG
+    if (m_texture == NULL) {
+        throw std::runtime_error(
+            "attempted to call texture::sdl() when m_texture is NULL"
+        );
+    }
+#endif
+
+    return m_texture;
+}
+
+
 
 
 /* class window */
