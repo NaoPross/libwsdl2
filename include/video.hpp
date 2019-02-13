@@ -261,8 +261,7 @@ namespace wsdl2 {
         renderer(texture& t);
         virtual ~renderer();
 
-        // TODO
-        inline void set_target() {}
+        void set_target(texture& target);
         inline void clear() { SDL_RenderClear(sdl()); }
         inline void present() { SDL_RenderPresent(sdl()); }
 
@@ -375,6 +374,8 @@ namespace wsdl2 {
     /// a graphic object allocated in the VRAM,
     class texture {
     public:
+        friend class renderer;
+
         enum class access : int {
             static_ = SDL_TEXTUREACCESS_STATIC,
             streaming = SDL_TEXTUREACCESS_STREAMING,

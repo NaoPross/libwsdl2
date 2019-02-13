@@ -51,6 +51,10 @@ renderer::renderer() {
     npdebug("warning: created uninitialized renderer object");
 }
 
+void renderer::set_target(texture& target) {
+    util::check(0 == SDL_SetRenderTarget(sdl(), target.sdl()));
+}
+
 SDL_Renderer * renderer::sdl() {
 #ifdef DEBUG
     if (m_renderer == NULL) {
