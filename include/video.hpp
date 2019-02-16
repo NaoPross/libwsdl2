@@ -251,6 +251,7 @@ namespace wsdl2 {
 
         // dirty C code
         SDL_Surface* sdl();
+        SDL_Surface* sdl() const;
     };
 
 
@@ -503,6 +504,7 @@ namespace wsdl2 {
 
         // dirty C code
         SDL_Texture* sdl();
+        SDL_Texture* sdl() const;
     };
 
 

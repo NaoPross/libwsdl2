@@ -9,7 +9,7 @@ extern "C" {
 #include <SDL2/SDL.h>
 
 #ifdef IMG_LOADING
-#include <SDL_image.h>
+#include <SDL2/SDL_image.h>
 #endif
 }
 

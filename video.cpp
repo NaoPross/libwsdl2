@@ -5,6 +5,10 @@
 
 extern "C" {
 #include <SDL2/SDL.h>
+
+#ifdef IMG_LOADING
+#include <SDL2/SDL_Image.h>
+#endif
 }
 
 using namespace wsdl2;
@@ -42,6 +46,18 @@ surface::~surface() {
 
 
 SDL_Surface* surface::sdl() {
+#ifdef DEBUG
+    if (m_surface == NULL) {
+        throw std::runtime_error(
+            "attempted to call texture::sdl() when m_texture is NULL"
+        );
+    }
+#endif
+
+    return m_surface;
+}
+
+SDL_Surface* surface::sdl() const {
 #ifdef DEBUG
     if (m_surface == NULL) {
         throw std::runtime_error(
@@ -125,18 +141,28 @@ texture::texture(renderer& r, pixelformat::format p, texture::access a,
     );
 }
 
-texture::texture(renderer& r, const surface& _surf)
+texture::texture(renderer& r, const surface& surf)
     : m_renderer(r)
 {
-    surface& surf = const_cast<surface&>(_surf);
+    SDL_Renderer * _rend = r.sdl();
+    npdebug("SDL Renderer: ", _rend)
+    *_rend;
 
+    SDL_Surface * _surf = surf.sdl()
+    npdebug("SDL Surface: ", _surf)
+    *_surf;
+
+    npdebug("Converting surface to texture")
     m_texture = SDL_CreateTextureFromSurface(r.sdl(), surf.sdl()); 
+    npdebug("Convertion successful")
     
     if(m_texture == NULL) 
     { 
         npdebug("Unable to create texture from surface"); 
         throw std::runtime_error(SDL_GetError());
     }
+
+    npdebug("Obtaining texture informations")
 
     // obtain informations
     int acc, w, h;
@@ -147,6 +173,8 @@ texture::texture(renderer& r, const surface& _surf)
     access_ = static_cast<access>(acc);
     width_ = static_cast<std::size_t>(w);
     height_ = static_cast<std::size_t>(h);
+
+    npdebug("Texture informations obtained")
 }
 
 texture::~texture() {
@@ -156,12 +184,19 @@ texture::~texture() {
 
 std::optional<texture> texture::load(const std::string& path, renderer& r)
 {
+    npdebug("Loading ", path, " as surface")
     auto surf = surface::load(path);
     
+    npdebug(path, " loaded successfully")
+
     if (surf) 
         return texture(r, *surf);
     else { 
+#ifdef IMG_LOADING
         npdebug("Unable to load image ", path, "! SDL_image Error: ", IMG_GetError()); 
+#else
+        npdebug("Unable to load image ", path); 
+#endif
     } 
     
     return std::nullopt; // nullopt
@@ -179,6 +214,17 @@ SDL_Texture* texture::sdl() {
     return m_texture;
 }
 
+SDL_Texture* texture::sdl() const {
+#ifdef DEBUG
+    if (m_texture == NULL) {
+        throw std::runtime_error(
+            "attempted to call texture::sdl() when m_texture is NULL"
+        );
+    }
+#endif
+
+    return m_texture;
+}
 
 
 
