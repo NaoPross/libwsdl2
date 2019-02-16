@@ -25,6 +25,16 @@ surface::surface(std::size_t width, std::size_t height, int depth /* = 24 */,
     }
 }
 
+// private constructor
+surface::surface(SDL_Surface* surf)
+{
+    if (surf == NULL) {
+        throw std::runtime_error("failed to create SDL_Surface");
+    }
+
+    m_surface = surf;
+}
+
 surface::~surface() {
     if (m_surface != NULL)
         SDL_FreeSurface(m_surface);
@@ -41,6 +51,19 @@ SDL_Surface* surface::sdl() {
 #endif
 
     return m_surface;
+}
+
+std::optional<surface> surface::load(const std::string& path)
+{
+    SDL_Surface* surf = 
+
+#ifdef IMG_LOADING
+        IMG_Load(path.c_str()); // use the image library
+#else
+        SDL_LoadBMP(path.c_str()); // load simply a bitmap
+#endif
+
+    return (surf == NULL) ? std::nullopt : std::optional<surface>(surface(surf));
 }
 
 
@@ -92,19 +115,56 @@ renderer::~renderer() {
 /* class texture */
 
 texture::texture(renderer& r, pixelformat::format p, texture::access a,
-                 std::size_t width, std::size_t height)
+                 std::size_t _width, std::size_t _height)
 
-    : format(p), access_(a), m_renderer(r)
+    : m_renderer(r), format(p), access_(a), width_(_width), height_(_height)
 {
     m_texture = SDL_CreateTexture(r.m_renderer, 
         static_cast<Uint32>(p), static_cast<int>(a), 
-        static_cast<int>(width), static_cast<int>(height)
+        static_cast<int>(width_), static_cast<int>(height_)
     );
+}
+
+texture::texture(renderer& r, const surface& _surf)
+    : m_renderer(r)
+{
+    surface& surf = const_cast<surface&>(_surf);
+
+    m_texture = SDL_CreateTextureFromSurface(r.sdl(), surf.sdl()); 
+    
+    if(m_texture == NULL) 
+    { 
+        npdebug("Unable to create texture from surface"); 
+        throw std::runtime_error(SDL_GetError());
+    }
+
+    // obtain informations
+    int acc, w, h;
+    Uint32 form;
+    SDL_QueryTexture(m_texture, &form, &acc, &w, &h);
+
+    format = static_cast<pixelformat::format>(form);
+    access_ = static_cast<access>(acc);
+    width_ = static_cast<std::size_t>(w);
+    height_ = static_cast<std::size_t>(h);
 }
 
 texture::~texture() {
     if (m_texture != NULL)
         SDL_DestroyTexture(m_texture);
+}
+
+std::optional<texture> texture::load(const std::string& path, renderer& r)
+{
+    auto surf = surface::load(path);
+    
+    if (surf) 
+        return texture(r, *surf);
+    else { 
+        npdebug("Unable to load image ", path, "! SDL_image Error: ", IMG_GetError()); 
+    } 
+    
+    return std::nullopt; // nullopt
 }
 
 SDL_Texture* texture::sdl() {

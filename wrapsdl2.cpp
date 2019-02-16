@@ -7,6 +7,10 @@
 
 extern "C" {
 #include <SDL2/SDL.h>
+
+#ifdef IMG_LOADING
+#include <SDL_image.h>
+#endif
 }
 
 bool wsdl2::initialize(void) {
@@ -22,10 +26,21 @@ bool wsdl2::initialize(void) {
 
     npdebug("initialized SDL2");
 
+#ifdef IMG_LOADING
+    IMG_init(IMG_INIT_PNG | IMG_INIT_JPG);
+    npdebug("png loading environment initialized")
+#endif
+
     return true;
 }
 
 void wsdl2::quit(void) {
+
+#ifdef IMG_LOADING
+    IMG_quit();
+    npdebug("png loading environment deinitialized")
+#endif
+
     if (SDL_WasInit(SDL_INIT_VIDEO))
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
 

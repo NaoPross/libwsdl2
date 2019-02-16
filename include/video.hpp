@@ -99,6 +99,9 @@ namespace wsdl2 {
     /// a graphical object allocated in the RAM
     class surface {
     public:
+
+        friend class texture;
+
         surface() = delete;
         virtual ~surface();
         
@@ -225,6 +228,7 @@ namespace wsdl2 {
             return val;
         }
 
+        static std::optional<surface> load(const std::string& path);
         
         // how about we don't allow this
         // void * pixels()
@@ -238,6 +242,11 @@ namespace wsdl2 {
         // SDL_Surface convert(pixelformat f);
 
     private:
+
+        // take the ownership of the sdl surface
+        // used for loading
+        surface(SDL_Surface*);
+
         SDL_Surface *m_surface;
 
         // dirty C code
@@ -398,8 +407,6 @@ namespace wsdl2 {
             target = SDL_TEXTUREACCESS_TARGET
         };
 
-        const pixelformat::format format;
-        const access access_;
 
         texture() = delete;
 
@@ -408,10 +415,11 @@ namespace wsdl2 {
         // TODO: create move constructor
         texture(texture&& other) = default;
         // TODO: create surface wrapper class
-        // texture(const surface& surf);
+        texture(renderer&, const surface& surf);
 
         texture(renderer& r, pixelformat::format p, access a,
                 std::size_t width, std::size_t height);
+
         virtual ~texture();
 
         inline void render() {
@@ -459,10 +467,39 @@ namespace wsdl2 {
 
             return val;
         }
+        
+        inline access pixel_access() const
+        {
+            return access_;
+        }
+
+        inline pixelformat::format pixel_format() const
+        {
+            return format;
+        }
+
+        inline std::size_t width() const
+        {
+            return width_;
+        }
+
+        inline std::size_t height() const
+        {
+            return height_;
+        }
+
+        static std::optional<texture> load(const std::string& path, renderer&);
 
     private:
+
         renderer& m_renderer;
+
         SDL_Texture *m_texture;
+
+        pixelformat::format format;
+        access access_;
+        std::size_t width_;
+        std::size_t height_;
 
         // dirty C code
         SDL_Texture* sdl();

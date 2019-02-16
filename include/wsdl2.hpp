@@ -5,7 +5,9 @@ extern "C" {
 }
 
 namespace wsdl2 {
+
     bool initialize(void);
+
     void quit(void);
     
     // tool functions
