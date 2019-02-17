@@ -105,6 +105,7 @@ namespace wsdl2 {
         surface() = delete;
         virtual ~surface();
         
+        surface(surface&& other);
         surface(std::size_t width, std::size_t height, int depth = 24,
                 int rmask = 0, int gmask = 0, int bmask = 0, int amask = 0);
 
@@ -414,9 +415,9 @@ namespace wsdl2 {
         // TODO: create a texture copy constructor?
         texture(const texture& other) = delete;
         // TODO: create move constructor
-        texture(texture&& other) = default;
+        texture(texture&& other);
         // TODO: create surface wrapper class
-        texture(renderer&, const surface& surf);
+        texture(renderer&, surface& surf);
 
         texture(renderer& r, pixelformat::format p, access a,
                 std::size_t width, std::size_t height);
@@ -469,24 +470,20 @@ namespace wsdl2 {
             return val;
         }
         
-        inline access pixel_access() const
-        {
-            return access_;
+        inline access pixel_access() const {
+            return m_access;
         }
 
-        inline pixelformat::format pixel_format() const
-        {
-            return format;
+        inline pixelformat::format pixel_format() const {
+            return m_format;
         }
 
-        inline std::size_t width() const
-        {
-            return width_;
+        inline std::size_t width() const {
+            return m_width;
         }
 
-        inline std::size_t height() const
-        {
-            return height_;
+        inline std::size_t height() const {
+            return m_height;
         }
 
         static std::optional<texture> load(const std::string& path, renderer&);
@@ -494,17 +491,15 @@ namespace wsdl2 {
     private:
 
         renderer& m_renderer;
-
         SDL_Texture *m_texture;
 
-        pixelformat::format format;
-        access access_;
-        std::size_t width_;
-        std::size_t height_;
+        pixelformat::format m_format;
+        access m_access;
+        std::size_t m_width;
+        std::size_t m_height;
 
         // dirty C code
         SDL_Texture* sdl();
-        SDL_Texture* sdl() const;
     };
 
 

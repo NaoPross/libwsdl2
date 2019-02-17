@@ -29,6 +29,12 @@ surface::surface(std::size_t width, std::size_t height, int depth /* = 24 */,
     }
 }
 
+surface::surface(surface&& other) {
+    npdebug("moved surface");
+    m_surface = other.m_surface;
+    other.m_surface = nullptr;
+}
+
 // private constructor
 surface::surface(SDL_Surface* surf)
 {
@@ -40,8 +46,11 @@ surface::surface(SDL_Surface* surf)
 }
 
 surface::~surface() {
-    if (m_surface != NULL)
+    npdebug("deleted surface");
+    if (m_surface != NULL) {
+        npdebug("freed surface");
         SDL_FreeSurface(m_surface);
+    }
 }
 
 
@@ -79,7 +88,10 @@ std::optional<surface> surface::load(const std::string& path)
         SDL_LoadBMP(path.c_str()); // load simply a bitmap
 #endif
 
-    return (surf == NULL) ? std::nullopt : std::optional<surface>(surface(surf));
+    if (surf == NULL) 
+        return std::nullopt;
+
+    return surface(surf);
 }
 
 
@@ -131,50 +143,43 @@ renderer::~renderer() {
 /* class texture */
 
 texture::texture(renderer& r, pixelformat::format p, texture::access a,
-                 std::size_t _width, std::size_t _height)
+                 std::size_t width, std::size_t height)
 
-    : m_renderer(r), format(p), access_(a), width_(_width), height_(_height)
+    : m_renderer(r), m_format(p), m_access(a), m_width(width), m_height(height)
 {
     m_texture = SDL_CreateTexture(r.m_renderer, 
-        static_cast<Uint32>(p), static_cast<int>(a), 
-        static_cast<int>(width_), static_cast<int>(height_)
+        static_cast<Uint32>(m_format), static_cast<int>(m_access), 
+        static_cast<int>(m_width), static_cast<int>(m_height)
     );
 }
 
-texture::texture(renderer& r, const surface& surf)
+texture::texture(texture&& other)
+    : m_renderer(other.m_renderer), m_texture(other.m_texture),
+      m_format(other.m_format), m_access(other.m_access),
+      m_width(other.m_width), m_height(other.m_height)
+{
+    other.m_texture = nullptr;
+}
+
+texture::texture(renderer& r, surface& surf)
     : m_renderer(r)
 {
-    SDL_Renderer * _rend = r.sdl();
-    npdebug("SDL Renderer: ", _rend)
-    *_rend;
-
-    SDL_Surface * _surf = surf.sdl()
-    npdebug("SDL Surface: ", _surf)
-    *_surf;
-
-    npdebug("Converting surface to texture")
     m_texture = SDL_CreateTextureFromSurface(r.sdl(), surf.sdl()); 
-    npdebug("Convertion successful")
     
-    if(m_texture == NULL) 
-    { 
-        npdebug("Unable to create texture from surface"); 
-        throw std::runtime_error(SDL_GetError());
+    util::check(m_texture != NULL);
+    if (m_texture == NULL) {
+        throw std::runtime_error("Unable to create texture from surface"); 
     }
-
-    npdebug("Obtaining texture informations")
 
     // obtain informations
     int acc, w, h;
     Uint32 form;
     SDL_QueryTexture(m_texture, &form, &acc, &w, &h);
 
-    format = static_cast<pixelformat::format>(form);
-    access_ = static_cast<access>(acc);
-    width_ = static_cast<std::size_t>(w);
-    height_ = static_cast<std::size_t>(h);
-
-    npdebug("Texture informations obtained")
+    m_format = static_cast<pixelformat::format>(form);
+    m_access = static_cast<access>(acc);
+    m_width = static_cast<std::size_t>(w);
+    m_height = static_cast<std::size_t>(h);
 }
 
 texture::~texture() {
@@ -213,19 +218,6 @@ SDL_Texture* texture::sdl() {
 
     return m_texture;
 }
-
-SDL_Texture* texture::sdl() const {
-#ifdef DEBUG
-    if (m_texture == NULL) {
-        throw std::runtime_error(
-            "attempted to call texture::sdl() when m_texture is NULL"
-        );
-    }
-#endif
-
-    return m_texture;
-}
-
 
 
 /* class window */
