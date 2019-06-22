@@ -1,5 +1,5 @@
-#include "wsdl2.hpp"
-#include "debug.hpp"
+#include "wsdl2/wsdl2.hpp"
+#include "wsdl2/debug.hpp"
 
 #ifdef WRAPSDL2_EXCEPTIONS
 #include <exception>

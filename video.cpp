@@ -1,5 +1,5 @@
-#include "video.hpp"
-#include "debug.hpp"
+#include "wsdl2/video.hpp"
+#include "wsdl2/debug.hpp"
 
 #include <exception>
 

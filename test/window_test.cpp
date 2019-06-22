@@ -1,8 +1,8 @@
-#include "debug.hpp"
+#include "wsdl2/debug.hpp"
 
-#include "wsdl2.hpp"
-#include "video.hpp"
-#include "event.hpp"
+#include "wsdl2/wsdl2.hpp"
+#include "wsdl2/video.hpp"
+#include "wsdl2/event.hpp"
 
 #include <iostream>
 #include <type_traits>
