@@ -15,6 +15,12 @@ using namespace wsdl2;
 
 /* class surface */
 
+surface::surface(surface&& other) {
+    npdebug("moved surface");
+    m_surface = other.m_surface;
+    other.m_surface = nullptr;
+}
+
 surface::surface(std::size_t width, std::size_t height, int depth /* = 24 */,
     int rmask /* = 0 */, int gmask /* = 0 */, int bmask /* = 0 */, int amask /* = 0 */
 ) {
@@ -29,16 +35,23 @@ surface::surface(std::size_t width, std::size_t height, int depth /* = 24 */,
     }
 }
 
-surface::surface(surface&& other) {
-    npdebug("moved surface");
-    m_surface = other.m_surface;
-    other.m_surface = nullptr;
+surface::surface(void *pixels, std::size_t width, std::size_t height, int depth, int pitch,
+    int rmask /* = 0 */, int gmask /* = 0 */, int bmask /* = 0 */, int amask /* = 0 */
+) {
+    m_surface = SDL_CreateRGBSurfaceFrom(pixels,
+        static_cast<int>(width), static_cast<int>(height),
+        depth, pitch, rmask, gmask, bmask, amask
+    );
+
+    if (m_surface == NULL) {
+        throw std::runtime_error("failed to create SDL_Surface from pixels");
+    }
 }
 
 // private constructor
 surface::surface(SDL_Surface* surf)
 {
-    if (surf == NULL) {
+    if (surf == nullptr) {
         throw std::runtime_error("failed to create SDL_Surface");
     }
 
@@ -102,8 +115,12 @@ renderer::renderer() {
     npdebug("warning: created uninitialized renderer object");
 }
 
-void renderer::set_target(texture& target) {
+bool renderer::set_target(texture& target) {
+    if (target.pixel_access() != texture::access::target)
+        return false;
+
     util::check(0 == SDL_SetRenderTarget(sdl(), target.sdl()));
+    return true;
 }
 
 SDL_Renderer * renderer::sdl() {
@@ -143,7 +160,7 @@ renderer::~renderer() {
 /* class texture */
 
 texture::texture(renderer& r, pixelformat::format p, texture::access a,
-                 std::size_t width, std::size_t height)
+                 int width, int height)
 
     : m_renderer(r), m_format(p), m_access(a), m_width(width), m_height(height)
 {

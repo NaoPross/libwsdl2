@@ -1,4 +1,4 @@
-#include "../debug.hpp"
+#include "debug.hpp"
 
 #include "wsdl2.hpp"
 #include "video.hpp"

@@ -109,10 +109,9 @@ namespace wsdl2 {
         surface(std::size_t width, std::size_t height, int depth = 24,
                 int rmask = 0, int gmask = 0, int bmask = 0, int amask = 0);
 
-        // TODO: constructor from raw pixels 
-        //       with SDL_CreateSurfaceFrom or SDL_CreateGBSurfaceWithFormatFrom or
-        //       with SDL_CreateRGBSurfaceFrom or SDL_CreateRGBSurfaceWithFormatFrom
-        // surface(void *pixels, ...)
+        // constructor from raw pixels 
+        surface(void *pixels, std::size_t width, std::size_t height, int depth, int pitch,
+                int rmask = 0, int gmask = 0, int bmask = 0, int amask = 0);
 
         // TODO: copy with SDL_BlitSurface(src, srect, dst, drect)
         // surface(const surface& other);
@@ -272,7 +271,8 @@ namespace wsdl2 {
         renderer(texture& t);
         virtual ~renderer();
 
-        void set_target(texture& target);
+        // TODO: check that is a target texture
+        bool set_target(texture& target);
         inline void clear() { SDL_RenderClear(sdl()); }
         inline void present() { SDL_RenderPresent(sdl()); }
 
@@ -411,16 +411,13 @@ namespace wsdl2 {
 
 
         texture() = delete;
-
-        // TODO: create a texture copy constructor?
         texture(const texture& other) = delete;
-        // TODO: create move constructor
+
         texture(texture&& other);
-        // TODO: create surface wrapper class
         texture(renderer&, surface& surf);
 
         texture(renderer& r, pixelformat::format p, access a,
-                std::size_t width, std::size_t height);
+                int width, int height);
 
         virtual ~texture();
 
@@ -446,9 +443,31 @@ namespace wsdl2 {
             ));
         }
 
+        /// lock to be write-only
+        inline surface lock() {
+            void *pixels;
+            int pitch;
+
+            util::check(0 == SDL_LockTexture(
+                m_texture, NULL, &pixels, &pitch
+            ));
+
+            return surface(pixels, width(), height(), 24, pitch);
+        }
+
         /// lock a portion to be write-only
-        // TODO: needs surface wrapper class
-        // bool lock(const rect& region, const surface&);
+        inline surface lock(const rect& region) {
+            void *pixels;
+            int pitch;
+
+            util::check(0 == SDL_LockTexture(
+                m_texture, &region, &pixels, &pitch
+            ));
+
+            // TODO: un-hardcode 24 bit depth
+            return surface(pixels, region.w, region.h, 24, pitch);
+        }
+
         inline void unlock() { SDL_UnlockTexture(m_texture); }
 
         inline bool alpha(std::uint8_t val) {
@@ -478,25 +497,24 @@ namespace wsdl2 {
             return m_format;
         }
 
-        inline std::size_t width() const {
+        inline int width() const {
             return m_width;
         }
 
-        inline std::size_t height() const {
+        inline int height() const {
             return m_height;
         }
 
         static std::optional<texture> load(const std::string& path, renderer&);
 
     private:
-
         renderer& m_renderer;
         SDL_Texture *m_texture;
 
         pixelformat::format m_format;
         access m_access;
-        std::size_t m_width;
-        std::size_t m_height;
+        int m_width;
+        int m_height;
 
         // dirty C code
         SDL_Texture* sdl();

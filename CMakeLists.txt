@@ -187,6 +187,7 @@ install(
         ${CMAKE_CURRENT_SOURCE_DIR}/include/util.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/video.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/wsdl2.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/debug.hpp
     DESTINATION
         ${CMAKE_INSTALL_INCLUDEDIR}/wsdl2
 )
