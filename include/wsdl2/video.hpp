@@ -18,31 +18,98 @@ namespace wsdl2 {
     class texture;
     class renderer;
     class window;
+
     namespace event {
         class event;
     }
 
     // name aliases
-    using rect = SDL_Rect;
-    /* equivalent to
-     * struct rect {
-     *     int x, y, w, h;
-     * };
-     */
 
-    using point = SDL_Point;
     /* equivalent to
      * struct point {
      *     int x, y;
      * };
      */
+    using point = SDL_Point;
 
-    using color = SDL_Color;
+    /* extension of SDL_Rect using black magic
+     * equivalent to
+     *
+     * struct rect {
+     *     int x, y, w, h;
+     *     ... methods
+     * };
+     *
+     * SDL_Rect can be cast to rect and vice versa
+     */
+    struct rect : public SDL_Rect {
+        rect()            = default;
+        rect(rect&)       = default;
+        rect(const rect&) = default;
+        rect(rect&&)      = default;
+
+        // emulate aggregate initialization with magic
+        template<typename ...Args>
+        rect(Args&& ...l) {
+            static_assert(
+                std::conjunction<
+                    std::is_same<int, typename std::decay<Args>::type>...
+                >::value, "must be int"
+            );
+
+            static_assert(sizeof ...(l) == 4, "rect has requires x, y, w, h");
+            // use contructor rect(x, y, w, h)
+            rect(std::forward<Args>(l)...);
+        }
+
+        rect(int _x, int _y, int _w, int _h) : SDL_Rect({_x, _y, _w, _h}) {}
+        rect(SDL_Rect& r) : SDL_Rect(r) {}
+        rect(SDL_Rect&& r) : SDL_Rect(r) {}
+
+        bool operator==(const rect& other) const {
+            return ((x == other.x)
+                    && (y == other.y)
+                    && (w == other.w)
+                    && (h == other.h));
+        }
+
+        inline bool intersects(const rect& other) const {
+            if (SDL_TRUE == SDL_HasIntersection(this, &other))
+                return true;
+
+            return false;
+        }
+
+        inline std::optional<rect> intersection(const rect& other) const {
+            rect result;
+            if (SDL_TRUE == SDL_IntersectRect(this, &other, &result))
+                return result;
+
+            return std::nullopt;
+        }
+
+        inline bool contains(const point& p) const {
+            return (SDL_TRUE == SDL_PointInRect(&p, this));
+        }
+
+        inline bool empty() const {
+            return (h <= 0 && w <= 0);
+        }
+
+        /// return a rectangle that is the union of two rectangles
+        static rect union_(const rect& a, const rect& b) {
+            rect res;
+            SDL_UnionRect(&a, &b, &res);
+            return res;
+        }
+    };
+
     /* equivalent to 
      * struct color {
      *     std::uint8_t r, g, b, a;
      * };
      */
+    using color = SDL_Color;
 
     enum class blend_mode {
         none  = SDL_BLENDMODE_NONE,
@@ -125,7 +192,7 @@ namespace wsdl2 {
         inline int width() { return sdl()->w; }
         inline int height() { return sdl()->h; }
 
-        inline rect clip() { return sdl()->clip_rect; }
+        inline rect clip() { return static_cast<rect>(sdl()->clip_rect); }
         inline bool clip(const rect& r) {
             return (SDL_TRUE == SDL_SetClipRect(sdl(), &r));
         }
