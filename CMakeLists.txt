@@ -32,13 +32,15 @@ endif()
 
 ############################
 # libwsdl2
-add_library(wsdl2 SHARED
+add_library(wsdl2 STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/event.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/video.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/wrapsdl2.cpp
 )
 
 add_library(WSDL2::wsdl2 ALIAS wsdl2)
+
+set_property(TARGET wsdl2 PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # set up headers
 target_include_directories(wsdl2
@@ -183,11 +185,11 @@ set_target_properties(wsdl2 PROPERTIES EXPORT_NAME WSDL2)
 # install public headers
 install(
     FILES  
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/event.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/util.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/video.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/wsdl2.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/debug.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/wsdl2/event.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/wsdl2/util.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/wsdl2/video.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/wsdl2/wsdl2.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/wsdl2/debug.hpp
     DESTINATION
         ${CMAKE_INSTALL_INCLUDEDIR}/wsdl2
 )
