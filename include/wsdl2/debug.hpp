@@ -1,9 +1,12 @@
 #pragma once
 
+#ifndef __NPDEBUG__
+#define __NPDEBUG__
+
 #include <iostream>
 #include <sstream>
 
-#ifdef DEBUG
+#ifndef NDEBUG
     #define __FILENAME__ (\
         __builtin_strrchr(__FILE__, '/') ? \
         __builtin_strrchr(__FILE__, '/') + 1 : __FILE__)
@@ -22,7 +25,7 @@
 
     namespace np {
         template<typename... Args>
-        inline void va_debug(Args&... args) {
+        inline void va_debug(Args&&... args) {
             (std::cerr << ... << args) << std::endl;
         }
 
@@ -71,4 +74,5 @@
         template<typename T>
         T inspect(const std::string& msg, const T& t) { return t; }
     }
-#endif
+#endif // NDEBUG
+#endif // __NPDEBUG__
