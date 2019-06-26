@@ -1,15 +1,15 @@
 #include "wsdl2/wsdl2.hpp"
 #include "wsdl2/debug.hpp"
 
-#ifdef WRAPSDL2_EXCEPTIONS
-#include <exception>
-#endif
-
 extern "C" {
 #include <SDL2/SDL.h>
 
-#ifdef IMG_LOADING
+#ifdef WSDL2_IMG
 #include <SDL2/SDL_image.h>
+#endif
+
+#ifdef WSDL2_TTF
+#include <SDL2/SDL_ttf.h>
 #endif
 }
 
@@ -28,7 +28,14 @@ bool wsdl2::initialize(void) {
 
 #ifdef IMG_LOADING
     IMG_init(IMG_INIT_PNG | IMG_INIT_JPG);
-    npdebug("png loading environment initialized")
+    npdebug("initialize SDL2_Img for PNG and JPG");
+#endif
+
+#ifdef WSDL2_TTF
+    if (TTF_Init() == -1) {
+        throw std::runtime_error("failed to initialize SDL2_ttf");
+    }
+    npdebug("initialized SDL2_ttf");
 #endif
 
     return true;

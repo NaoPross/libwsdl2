@@ -13,22 +13,20 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 find_package(SDL2 REQUIRED)
 
 # optional dependencies
-find_package(MM
-    HINTS
-        $<$<CMAKE_SYSTEM:Linux>:/usr/local/lib/cmake/>
-)
-
+find_package(MM)
 if (NOT MM-NOTFOUND)
     message("Building with libmm support")
 endif ()
 
 find_package(Threads)
-
 if (NOT Threads-NOTFOUND)
-    message("Build with threaded test support")
+    message("Building with Threads support")
 endif()
 
-
+find_package(SDL2TTF)
+if (NOT SDL2TTF-NOTFOUND)
+    message("Building with ttf support")
+endif()
 
 ############################
 # libwsdl2
@@ -97,16 +95,14 @@ target_link_libraries(wsdl2
 )
 
 if (NOT MM-NOTFOUND)
-    target_compile_definitions(wsdl2
-        PRIVATE
-            WSDL2_USE_MM
-    )
-
-    target_link_libraries(wsdl2
-        PRIVATE
-            ${MM_LIBRARIES}
-    )
+    target_compile_definitions(wsdl2 PRIVATE WSDL2_USE_MM)
+    target_link_libraries(wsdl2 PRIVATE MM::MM)
 endif ()
+
+if (NOT SDL2TTF-FOUND)
+    target_compile_definitions(wsdl2 PRIVATE WSDL2_TTF)
+    target_link_libraries(wsdl2 PRIVATE ${SDL2TTF_LIBRARY})
+endif()
 
 ###########################
 # test section
@@ -190,6 +186,7 @@ install(
         ${CMAKE_CURRENT_SOURCE_DIR}/include/wsdl2/video.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/wsdl2/wsdl2.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/wsdl2/debug.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/wsdl2/ttf.hpp
     DESTINATION
         ${CMAKE_INSTALL_INCLUDEDIR}/wsdl2
 )
