@@ -28,6 +28,11 @@ if (NOT SDL2TTF-NOTFOUND)
     message("Building with ttf support")
 endif()
 
+find_package(SDL2_image)
+if (NOT SDL2_image-NOTFOUND)
+    message("Building with image support")
+endif()
+
 ############################
 # libwsdl2
 add_library(wsdl2 STATIC
@@ -102,6 +107,11 @@ endif ()
 if (NOT SDL2TTF-FOUND)
     target_compile_definitions(wsdl2 PRIVATE WSDL2_TTF)
     target_link_libraries(wsdl2 PRIVATE ${SDL2TTF_LIBRARY})
+endif()
+
+if (SDL2IMAGE_FOUND)
+    target_compile_definitions(wsdl2 PRIVATE WSDL2_IMG)
+    target_link_libraries(wsdl2 PRIVATE ${SDL2IMAGE_LIBRARY})
 endif()
 
 ###########################
