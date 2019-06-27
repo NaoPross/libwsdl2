@@ -39,6 +39,7 @@ add_library(wsdl2 STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/event.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/video.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/wrapsdl2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ttf.cpp
 )
 
 add_library(WSDL2::wsdl2 ALIAS wsdl2)

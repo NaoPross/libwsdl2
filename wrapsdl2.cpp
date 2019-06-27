@@ -1,5 +1,6 @@
 #include "wsdl2/wsdl2.hpp"
 #include "wsdl2/debug.hpp"
+#include "wsdl2/util.hpp"
 
 extern "C" {
 #include <SDL2/SDL.h>
@@ -32,7 +33,7 @@ bool wsdl2::initialize(void) {
 #endif
 
 #ifdef WSDL2_TTF
-    if (TTF_Init() == -1) {
+    if (util::check_ttf(TTF_Init() != -1)) {
         throw std::runtime_error("failed to initialize SDL2_ttf");
     }
     npdebug("initialized SDL2_ttf");
@@ -43,9 +44,14 @@ bool wsdl2::initialize(void) {
 
 void wsdl2::quit(void) {
 
-#ifdef IMG_LOADING
-    IMG_quit();
-    npdebug("png loading environment deinitialized")
+#ifdef WSDL2_TTF
+    TTF_Quit();
+    npdebug("deinitialized SDL2_ttf");
+#endif
+
+#ifdef WSDL2_IMG
+    IMG_Quit();
+    npdebug("deinitialized SDL2_image");
 #endif
 
     if (SDL_WasInit(SDL_INIT_VIDEO))
@@ -55,8 +61,7 @@ void wsdl2::quit(void) {
         SDL_QuitSubSystem(SDL_INIT_EVENTS);
 
     SDL_Quit();
-
-    npdebug("deinitialized (quit) SDL2");
+    npdebug("deinitialized SDL2");
 }
 
 

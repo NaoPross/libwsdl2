@@ -1,7 +1,12 @@
+#pragma once
 #include "debug.hpp"
 
 extern "C" {
 #include <SDL2/SDL_error.h>
+
+#ifdef WSDL2_TTF
+#include <SDL2/SDL_ttf.h>
+#endif
 }
 
 namespace wsdl2 {
@@ -15,7 +20,7 @@ namespace wsdl2 {
         // }
 
         constexpr inline bool check(bool expr) {
-#ifdef DEBUG
+#ifndef NDEBUG
             if (!expr) {
                 npdebug("an internal SDL error occurred:");
                 npdebug("  ", const_cast<const char * const>(SDL_GetError()));
@@ -23,5 +28,17 @@ namespace wsdl2 {
 #endif
             return expr;
         }
+
+#ifdef WSDL2_TTF
+        constexpr inline bool check_ttf(bool expr) {
+#ifndef NDEBUG
+            if (!expr) {
+                npdebug("an internal SDL_ttf error occurred:");
+                npdebug("  ", const_cast<const char * const>(TTF_GetError()));
+            }
+#endif
+            return expr;
+        }
+#endif
     }
 }

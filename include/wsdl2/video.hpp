@@ -163,11 +163,21 @@ namespace wsdl2 {
         SDL_PixelFormat *m_pixelformat;
     };
 
+
+#ifdef WSDL2_TTF
+    namespace ttf {
+        class font;
+    }
+#endif
+
     /// a graphical object allocated in the RAM
     class surface {
     public:
 
         friend class texture;
+#ifdef WSDL2_TTF
+        friend class ttf::font;
+#endif
 
         surface() = delete;
         virtual ~surface();
