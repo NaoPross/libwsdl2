@@ -33,7 +33,7 @@ bool wsdl2::initialize(void) {
 #endif
 
 #ifdef WSDL2_TTF
-    if (util::check_ttf(TTF_Init() != -1)) {
+    if (util::check_ttf(TTF_Init() == -1)) {
         throw std::runtime_error("failed to initialize SDL2_ttf");
     }
     npdebug("initialized SDL2_ttf");
