@@ -46,10 +46,13 @@ namespace wsdl2 {
         rect()            = default;
         rect(rect&)       = default;
         rect(const rect&) = default;
-        rect(rect&&)      = default;
 
         // emulate aggregate initialization with magic
-        template<typename ...Args>
+        template<typename ...Args,
+                 std::enable_if_t<
+                     std::conjunction<
+                         std::is_same<int, typename std::decay<Args>::type>...
+                         >::value>>
         rect(Args&& ...l) {
             static_assert(
                 std::conjunction<
@@ -101,6 +104,10 @@ namespace wsdl2 {
             rect res;
             SDL_UnionRect(&a, &b, &res);
             return res;
+        }
+
+        rect union_with(const rect& other) {
+            return rect::union_(*this, other);
         }
     };
 
