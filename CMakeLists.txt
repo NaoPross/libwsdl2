@@ -105,13 +105,13 @@ if (NOT MM-NOTFOUND)
     target_link_libraries(wsdl2 PRIVATE MM::MM)
 endif ()
 
-if (NOT SDL2TTF-FOUND)
-    target_compile_definitions(wsdl2 PRIVATE WSDL2_TTF)
+if (SDL2TTF_FOUND)
+    target_compile_definitions(wsdl2 PUBLIC WSDL2_TTF)
     target_link_libraries(wsdl2 PRIVATE ${SDL2TTF_LIBRARY})
 endif()
 
 if (SDL2IMAGE_FOUND)
-    target_compile_definitions(wsdl2 PRIVATE WSDL2_IMG)
+    target_compile_definitions(wsdl2 PUBLIC WSDL2_IMG)
     target_link_libraries(wsdl2 PRIVATE ${SDL2IMAGE_LIBRARY})
 endif()
 
@@ -119,6 +119,7 @@ endif()
 # test section
 ###########################
 
+include(CTest)
 enable_testing()
 
 # window_test                                                                     
@@ -134,18 +135,7 @@ target_compile_features(window_test
         cxx_std_17
 )
 
-#target_include_directories(window_test
-#    PRIVATE
-#        ${CMAKE_CURRENT_DIR}/include
-#)
-
-                                                                                
-add_test(
-    NAME window_test 
-    CONFIGURATIONS Debug  
-    WORKING_DIRECTORY test 
-    COMMAND window_test 
-)      
+add_test(window window_test)      
 
 
 if (NOT Threads-NOTFOUND)
@@ -168,12 +158,7 @@ if (NOT Threads-NOTFOUND)
     #         ${CMAKE_CURRENT_DIR}/include
     # )
                                                                                    
-    add_test(
-        NAME threaded_window_test 
-        CONFIGURATIONS Debug  
-        WORKING_DIRECTORY test 
-        COMMAND threaded_window_test 
-    ) 
+    add_test(threaded_window threaded_window_test) 
 endif ()
 
 ############################
