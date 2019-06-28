@@ -54,12 +54,6 @@ namespace wsdl2 {
                          std::is_same<int, typename std::decay<Args>::type>...
                          >::value>>
         rect(Args&& ...l) {
-            static_assert(
-                std::conjunction<
-                    std::is_same<int, typename std::decay<Args>::type>...
-                >::value, "must be int"
-            );
-
             static_assert(sizeof ...(l) == 4, "rect has requires x, y, w, h");
             // use contructor rect(x, y, w, h)
             rect(std::forward<Args>(l)...);
