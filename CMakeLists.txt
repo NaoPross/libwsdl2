@@ -61,9 +61,14 @@ target_compile_options(wsdl2
             -pedantic -Wall -Wextra -Wcast-qual -Wcast-align -Wpointer-arith
             -Winit-self -Wshadow -Wswitch-enum -Wredundant-decls -Wfloat-equal
             -Wundef -Wvla -Wconversion -Wstrict-aliasing
+            -g3
         >
         $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
+
+# target_link_libraries(wsdl2
+#     PRIVATE "$<$<CXX_COMPILER_ID:GNU>:-fsanitize=address -fno-omit-frame-pointer>"
+# )
 
 # configuration of SDL2 under windows
 if (MSVC)
@@ -129,6 +134,10 @@ target_link_libraries(window_test
     PRIVATE  
         WSDL2::wsdl2
 ) 
+
+# target_link_libraries(window_test
+#     PRIVATE "$<$<CXX_COMPILER_ID:GNU>:-fsanitize=address -fno-omit-frame-pointer>"
+# )
 
 target_compile_features(window_test
     PRIVATE

@@ -4,8 +4,9 @@
 
 #include <string>
 #include <array>
-#include <type_traits>
+#include <memory>
 #include <optional>
+#include <type_traits>
 #include <unordered_map>
 
 extern "C" {
@@ -347,11 +348,13 @@ namespace wsdl2 {
 
         renderer(window& w);
         renderer(texture& t);
+
+        renderer(renderer&& other);
         virtual ~renderer();
 
         // TODO: check that is a target texture
         bool set_target(texture& target);
-        inline void clear() { SDL_RenderClear(sdl()); }
+        inline void clear() { util::check(0 == SDL_RenderClear(sdl())); }
         inline void present() { SDL_RenderPresent(sdl()); }
 
         // viewport
@@ -466,10 +469,10 @@ namespace wsdl2 {
 
 
     private:
-        SDL_Renderer *m_renderer;
+        SDL_Renderer *m_renderer = NULL;
 
         renderer();
-        void create_sdl_renderer(SDL_Window *win);
+        renderer(SDL_Window *win);
 
         // dirty C code
         SDL_Renderer* sdl();
@@ -607,6 +610,7 @@ namespace wsdl2 {
 
         window() = delete;
         window(const window& other) = delete;
+        window(window&& other);
 
         window(const std::string& title, std::size_t width, std::size_t height);
         virtual ~window();
@@ -624,17 +628,17 @@ namespace wsdl2 {
         bool is_visible();
 
         // rendering
-        renderer& get_renderer() { return m_renderer; }
+        renderer& get_renderer() { return *m_renderer; }
         void update();
 
         static window& get(unsigned id);
 
     private:
         bool m_open;
-        SDL_Window *m_window;
+        SDL_Window *m_window = NULL;
         const unsigned m_id;
 
-        renderer m_renderer;
+        std::unique_ptr<renderer> m_renderer;
 
         // dirty C code
         SDL_Window* sdl();

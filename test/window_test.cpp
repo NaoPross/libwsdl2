@@ -13,8 +13,8 @@ int main() {
 
     wsdl2::initialize();
 
-    window win("Window Test", 800, 600);
-    win.open();
+    auto win = std::make_unique<window>("Window Test", 800, 600);
+    win->open();
 
     do {
         auto event = event::poll();
@@ -23,14 +23,14 @@ int main() {
                 using T = std::decay_t<decltype(e)>;
                 
                 if constexpr (std::is_same_v<T, event::quit>) {
-                    win.close();
+                    win->close();
                 }
                 
                 if constexpr (std::is_same_v<T, event::key>) {
                     if (e.type == event::key::action::up) {
                         // TODO: map SDLKs and SDL_SCANCODEs
                         if (e.keysym.sym == SDLK_ESCAPE) {
-                            win.close();
+                            win->close();
                         }
                     }
                 }
@@ -45,10 +45,12 @@ int main() {
             }, *event);
         }
 
-        win.update();
+        win->update();
         // ~60 fps test
         wsdl2::delay(static_cast<unsigned>(1000.0/60.0));
-    } while (win.is_open());
+    } while (win->is_open());
+
+    win.reset();
 
     wsdl2::quit();
     return 0;

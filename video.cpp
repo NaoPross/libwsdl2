@@ -33,6 +33,8 @@ surface::surface(std::size_t width, std::size_t height, int depth /* = 24 */,
     if (m_surface == NULL) {
         throw std::runtime_error("failed to create SDL_Surface");
     }
+
+    npdebug("created surface");
 }
 
 surface::surface(void *pixels, std::size_t width, std::size_t height, int depth, int pitch,
@@ -46,6 +48,8 @@ surface::surface(void *pixels, std::size_t width, std::size_t height, int depth,
     if (m_surface == NULL) {
         throw std::runtime_error("failed to create SDL_Surface from pixels");
     }
+
+    npdebug("crated surface from pixels");
 }
 
 // private constructor
@@ -56,6 +60,7 @@ surface::surface(SDL_Surface* surf)
     }
 
     m_surface = surf;
+    npdebug("created surface from ptr");
 }
 
 surface::~surface() {
@@ -109,10 +114,14 @@ std::optional<surface> surface::load(const std::string& path)
 
 
 
-/* class renderer */
+/* class Renderer */
 
 renderer::renderer() {
     npdebug("warning: created uninitialized renderer object");
+}
+
+renderer::renderer(renderer&& other) {
+    m_renderer = std::move(other.m_renderer);
 }
 
 bool renderer::set_target(texture& target) {
@@ -135,24 +144,27 @@ SDL_Renderer * renderer::sdl() {
     return m_renderer;
 }
 
-void renderer::create_sdl_renderer(SDL_Window *win)  {
+renderer::renderer(SDL_Window *win)  {
     // create a rendering contest
     m_renderer = SDL_CreateRenderer(
         win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
     );
 
-    if (m_renderer == NULL) {
+    if (!m_renderer) {
         throw std::runtime_error("failed to create SDL renderer");
     }
 }
 
 renderer::renderer(window& w) {
-    create_sdl_renderer(w.sdl());
+    renderer(w.sdl());
+    npdebug("created renderer from window");
 }
 
 renderer::~renderer() {
-    if (m_renderer != NULL)
+    if (m_renderer != NULL) {
         SDL_DestroyRenderer(m_renderer);
+        npdebug("destroyed renderer");
+    }
 }
 
 
@@ -200,8 +212,10 @@ texture::texture(renderer& r, surface& surf)
 }
 
 texture::~texture() {
-    if (m_texture != NULL)
+    if (m_texture != NULL) {
         SDL_DestroyTexture(m_texture);
+        npdebug("destroyed texture");
+    }
 }
 
 std::optional<texture> texture::load(const std::string& path, renderer& r)
@@ -242,6 +256,15 @@ SDL_Texture* texture::sdl() {
 // code used by events
 std::unordered_map<unsigned, window*> window::_windows;
 
+window::window(window&& other)
+    : m_open(other.m_open),
+      m_window(other.m_window),
+      m_id(other.m_id),
+      m_renderer(std::move(other.m_renderer))
+{
+    other.m_window = NULL;
+}
+
 window::window(const std::string& title, std::size_t width, std::size_t height)
     : m_open(false),
       // create (hidden) window
@@ -253,22 +276,27 @@ window::window(const std::string& title, std::size_t width, std::size_t height)
           static_cast<int>(height),
           SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN
       )),
-      m_id(SDL_GetWindowID(m_window))
+      m_id(SDL_GetWindowID(m_window)),
+      m_renderer(new renderer(m_window))
 {
     // put into window id mapping
     _windows.insert({m_id, this});
 
-    // create renderer
-    m_renderer.create_sdl_renderer(m_window);
+    npdebug("creaded window");
 }
 
 window::~window() {
     // remove from window id mapping
     _windows.erase(m_id);
 
+    // destroy renderer
+    m_renderer.reset();
+
     // destroy window
-    if (m_window != NULL)
+    if (m_window != NULL) {
         SDL_DestroyWindow(m_window);
+        npdebug("destroyed window");
+    }
 }
 
 
@@ -291,8 +319,8 @@ bool window::is_visible() {
 }
 
 void window::update() {
-    m_renderer.clear();
-    m_renderer.present();
+    m_renderer->clear();
+    m_renderer->present();
 }
 
 SDL_Window * window::sdl() {
