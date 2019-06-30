@@ -45,7 +45,8 @@ int main() {
             }, *event);
         }
 
-        win->update();
+        win->clear();
+        win->present();
         // ~60 fps test
         wsdl2::delay(static_cast<unsigned>(1000.0/60.0));
     } while (win->is_open());

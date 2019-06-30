@@ -662,8 +662,10 @@ namespace wsdl2 {
         bool is_visible();
 
         // rendering
-        renderer& get_renderer() { return *m_renderer; }
-        void update();
+        renderer& get_renderer() const { return *m_renderer; }
+        void clear() const { m_renderer->clear(); }
+        void present() const { m_renderer->present(); }
+            
 
         static window& get(unsigned id);
 
@@ -672,7 +674,7 @@ namespace wsdl2 {
         SDL_Window *m_window = NULL;
         const unsigned m_id;
 
-        std::unique_ptr<renderer> m_renderer;
+        mutable std::unique_ptr<renderer> m_renderer;
 
         // dirty C code
         SDL_Window* sdl();

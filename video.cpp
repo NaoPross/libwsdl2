@@ -318,11 +318,6 @@ bool window::is_visible() {
     return SDL_WINDOW_SHOWN & SDL_GetWindowFlags(m_window);
 }
 
-void window::update() {
-    m_renderer->clear();
-    m_renderer->present();
-}
-
 SDL_Window * window::sdl() {
 #ifdef DEBUG
     if (m_window == NULL) {
