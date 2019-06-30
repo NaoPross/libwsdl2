@@ -14,6 +14,10 @@ extern "C" {
 #include <SDL2/SDL_render.h>
 }
 
+#ifdef WSDL2_USE_MM
+#include <mm/mmvec.hpp>
+#endif
+
 namespace wsdl2 {
     // forward declarations
     class texture;
@@ -104,6 +108,36 @@ namespace wsdl2 {
         rect union_with(const rect& other) {
             return rect::union_(*this, other);
         }
+
+#ifdef WSDL2_USE_MM
+        /// convert to 4d vector
+        operator mm::vec<int, 4>() {
+            return { x, y, w, h };
+        }
+
+        mm::vec2<int> pos() {
+            return { x, y };
+        }
+
+        void pos(mm::vec2<int> newpos) {
+            x = newpos.x();
+            y = newpos.y();
+        }
+
+        void move(mm::vec2<int> v) {
+            x += v.x();
+            y += v.y();
+        }
+
+        mm::vec2<int> size() {
+            return { w, h };
+        }
+
+        void resize(mm::vec2<int> newsize) {
+            w = newsize.x();
+            h = newsize.y();
+        }
+#endif
     };
 
     /* equivalent to 
