@@ -191,7 +191,7 @@ texture::texture(texture&& other)
 }
 
 texture::texture(renderer& r, surface& surf)
-    : m_renderer(r)
+    : m_renderer(r), m_access(access::static_)
 {
     m_texture = SDL_CreateTextureFromSurface(r.sdl(), surf.sdl()); 
     
@@ -206,7 +206,8 @@ texture::texture(renderer& r, surface& surf)
     SDL_QueryTexture(m_texture, &form, &acc, &w, &h);
 
     m_format = static_cast<pixelformat::format>(form);
-    m_access = static_cast<access>(acc);
+    // access is always static
+    // m_access = static_cast<access>(acc);
     m_width = static_cast<std::size_t>(w);
     m_height = static_cast<std::size_t>(h);
 }

@@ -147,6 +147,7 @@ namespace wsdl2 {
      */
     using color = SDL_Color;
 
+    // TODO: implement blend in texture
     enum class blend_mode {
         none  = SDL_BLENDMODE_NONE,
         blend = SDL_BLENDMODE_BLEND,
@@ -512,6 +513,9 @@ namespace wsdl2 {
         SDL_Renderer* sdl();
     };
 
+    struct static_texture;
+    struct streaming_texture;
+    struct target_texture;
 
     /// a graphic object allocated in the VRAM,
     class texture {
@@ -622,12 +626,15 @@ namespace wsdl2 {
 
         static std::optional<texture> load(const std::string& path, renderer&);
 
+        // operator static_texture() {
+        // }
+
     private:
         renderer& m_renderer;
         SDL_Texture *m_texture;
 
         pixelformat::format m_format;
-        access m_access;
+        const access m_access;
         int m_width;
         int m_height;
 
@@ -635,6 +642,63 @@ namespace wsdl2 {
         SDL_Texture* sdl();
     };
 
+    struct static_texture : private texture
+    {
+        using texture::texture;
+
+        static_texture(renderer& r, pixelformat::format p, int width, int height)
+            : texture(r, p, texture::access::static_, width, height) {}
+
+        using texture::render;
+
+        using texture::alpha;
+
+        using texture::pixel_access;
+        using texture::pixel_format;
+
+        using texture::width;
+        using texture::height;
+    };
+
+    struct streaming_texture : private texture
+    {
+        using texture::texture;
+
+        streaming_texture(renderer& r, pixelformat::format p, int width, int height)
+            : texture(r, p, texture::access::streaming, width, height) {}
+        
+        using texture::render;
+
+        using texture::lock;
+        using texture::lock;
+        using texture::unlock;
+
+        using texture::alpha;
+
+        using texture::pixel_access;
+        using texture::pixel_format;
+
+        using texture::width;
+        using texture::height;
+    };
+
+    struct target_texture : private texture
+    {
+        using texture::texture;
+
+        target_texture(renderer& r, pixelformat::format p, int width, int height)
+            : texture(r, p, texture::access::target, width, height) {}
+
+        using texture::render;
+
+        using texture::alpha;
+
+        using texture::pixel_access;
+        using texture::pixel_format;
+
+        using texture::width;
+        using texture::height;
+    };
 
     /// a basic wrapper around a SDL window
     class window {
