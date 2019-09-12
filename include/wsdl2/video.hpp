@@ -374,6 +374,9 @@ namespace wsdl2 {
     public:
         friend class window;
         friend class texture;
+        friend class static_texture;
+        friend class streaming_texture;
+        friend class target_texture;
 
         enum class flip {
             none       = SDL_FLIP_NONE,
@@ -533,10 +536,17 @@ namespace wsdl2 {
         texture(const texture& other) = delete;
 
         texture(texture&& other);
-        texture(renderer&, surface& surf);
 
-        texture(renderer& r, pixelformat::format p, access a,
-                int width, int height);
+    protected:
+
+        // main constructor
+        texture(renderer& r, texture::access a, int width, int height, 
+                pixelformat::format p = pixelformat::format::unknown);
+
+        // static from surface constructor
+        texture(renderer& r, surface& surf, pixelformat::format p = pixelformat::format::unknown);
+
+    public:
 
         virtual ~texture();
 
@@ -562,33 +572,6 @@ namespace wsdl2 {
             ));
         }
 
-        /// lock to be write-only
-        inline surface lock() {
-            void *pixels;
-            int pitch;
-
-            util::check(0 == SDL_LockTexture(
-                m_texture, NULL, &pixels, &pitch
-            ));
-
-            return surface(pixels, width(), height(), 24, pitch);
-        }
-
-        /// lock a portion to be write-only
-        inline surface lock(const rect& region) {
-            void *pixels;
-            int pitch;
-
-            util::check(0 == SDL_LockTexture(
-                m_texture, &region, &pixels, &pitch
-            ));
-
-            // TODO: un-hardcode 24 bit depth
-            return surface(pixels, region.w, region.h, 24, pitch);
-        }
-
-        inline void unlock() { SDL_UnlockTexture(m_texture); }
-
         inline bool alpha(std::uint8_t val) {
             int supported = SDL_SetTextureAlphaMod(m_texture, val);
             if (supported == -1)
@@ -608,9 +591,7 @@ namespace wsdl2 {
             return val;
         }
         
-        inline access pixel_access() const {
-            return m_access;
-        }
+        virtual access pixel_access() const = 0;
 
         inline pixelformat::format pixel_format() const {
             return m_format;
@@ -624,80 +605,107 @@ namespace wsdl2 {
             return m_height;
         }
 
-        static std::optional<texture> load(const std::string& path, renderer&);
-
         // operator static_texture() {
         // }
-
-    private:
-        renderer& m_renderer;
-        SDL_Texture *m_texture;
-
-        pixelformat::format m_format;
-        const access m_access;
-        int m_width;
-        int m_height;
+    protected:
 
         // dirty C code
         SDL_Texture* sdl();
+
+        renderer& m_renderer;
+
+        // needed by the subclasses' constructors
+        const int m_width;
+        const int m_height;
+        pixelformat::format m_format;
+
+    private:
+        SDL_Texture *m_texture;
     };
 
-    struct static_texture : private texture
+    struct static_texture : public texture
     {
-        using texture::texture;
+        // create a non-modifiable texture basing on a surface
+        // inherited directly from the superclass
+        static_texture(renderer& r, surface& surf, pixelformat::format p = pixelformat::format::unknown)
+            : texture(r, surf, p) {}
 
-        static_texture(renderer& r, pixelformat::format p, int width, int height)
-            : texture(r, p, texture::access::static_, width, height) {}
+        // TODO, constexpr identifier
+        virtual access pixel_access() const override
+        {
+            return access::static_;
+        }
 
-        using texture::render;
-
-        using texture::alpha;
-
-        using texture::pixel_access;
-        using texture::pixel_format;
-
-        using texture::width;
-        using texture::height;
+        // load a non-modifiable texture from a file
+        static std::shared_ptr<texture> load(const std::string& path, renderer&);
     };
 
-    struct streaming_texture : private texture
+    struct streaming_texture : public texture
     {
-        using texture::texture;
+    public:
+        // create a modifiable texture basing on a surface
+        streaming_texture(renderer& r, surface& surf, pixelformat::format p = pixelformat::format::unknown);
 
-        streaming_texture(renderer& r, pixelformat::format p, int width, int height)
-            : texture(r, p, texture::access::streaming, width, height) {}
+        // create a blank modifiable texture 
+        streaming_texture(renderer& r, int width, int height, pixelformat::format p = pixelformat::format::unknown)
+            : texture(r, texture::access::streaming, width, height, p) {}
+        // TODO, constexpr identifier
         
-        using texture::render;
+        /// lock to be write-only
+        inline surface lock() {
+            void *pixels;
+            int pitch;
 
-        using texture::lock;
-        using texture::lock;
-        using texture::unlock;
+            util::check(0 == SDL_LockTexture(
+                sdl(), NULL, &pixels, &pitch
+            ));
 
-        using texture::alpha;
+            return surface(pixels, width(), height(), 24, pitch);
+        }
 
-        using texture::pixel_access;
-        using texture::pixel_format;
+        /// lock a portion to be write-only
+        inline surface lock(const rect& region) {
+            void *pixels;
+            int pitch;
 
-        using texture::width;
-        using texture::height;
+            util::check(0 == SDL_LockTexture(
+                sdl(), &region, &pixels, &pitch
+            ));
+
+            // TODO: un-hardcode 24 bit depth
+            return surface(pixels, region.w, region.h, 24, pitch);
+        }
+
+        inline void unlock() { SDL_UnlockTexture(sdl()); }
+
+        virtual access pixel_access() const override
+        {
+            return access::streaming;
+        }
     };
 
-    struct target_texture : private texture
+    struct target_texture : public texture
     {
-        using texture::texture;
+        // create a blank layer texture (read-only)
+        target_texture(renderer& r, int width, int height, pixelformat::format p = pixelformat::format::unknown)
+            : texture(r, texture::access::target, width, height, p) {}
 
-        target_texture(renderer& r, pixelformat::format p, int width, int height)
-            : texture(r, p, texture::access::target, width, height) {}
+        // TODO, constexpr identifier
+        virtual access pixel_access() const override
+        {
+            return access::target;
+        }
 
-        using texture::render;
+        // set as current render target
+        inline void set_target() {
+            util::check(SDL_SetRenderTarget(m_renderer.sdl(), sdl()) == 0);
+        }
 
-        using texture::alpha;
+        inline bool is_target() {
+            return SDL_GetRenderTarget(m_renderer.sdl()) == sdl();
+        }
 
-        using texture::pixel_access;
-        using texture::pixel_format;
-
-        using texture::width;
-        using texture::height;
+        // TODO, target functionalities
     };
 
     /// a basic wrapper around a SDL window

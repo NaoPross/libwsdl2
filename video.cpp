@@ -171,28 +171,32 @@ renderer::~renderer() {
 
 /* class texture */
 
-texture::texture(renderer& r, pixelformat::format p, texture::access a,
-                 int width, int height)
-
-    : m_renderer(r), m_format(p), m_access(a), m_width(width), m_height(height)
+texture::texture(renderer& r, texture::access a, int width, int height, pixelformat::format p)
+    : m_renderer(r), m_format(p), m_width(width), m_height(height)
 {
     m_texture = SDL_CreateTexture(r.m_renderer, 
-        static_cast<Uint32>(m_format), static_cast<int>(m_access), 
+        static_cast<Uint32>(m_format), static_cast<int>(a), 
         static_cast<int>(m_width), static_cast<int>(m_height)
     );
 }
 
 texture::texture(texture&& other)
     : m_renderer(other.m_renderer), m_texture(other.m_texture),
-      m_format(other.m_format), m_access(other.m_access),
-      m_width(other.m_width), m_height(other.m_height)
+      m_format(other.m_format),
+      m_width(other.m_width), 
+      m_height(other.m_height)
 {
     other.m_texture = nullptr;
 }
 
-texture::texture(renderer& r, surface& surf)
-    : m_renderer(r), m_access(access::static_)
+texture::texture(renderer& r, surface& surf, pixelformat::format p)
+    : m_renderer(r), m_width(surf.width()), m_height(surf.height()), m_format(p)
 {
+    if (p != pixelformat::format::unknown)
+    {
+        // TODO, create a new surface with the right pixelformat
+    }
+
     m_texture = SDL_CreateTextureFromSurface(r.sdl(), surf.sdl()); 
     
     util::check(m_texture != NULL);
@@ -208,8 +212,8 @@ texture::texture(renderer& r, surface& surf)
     m_format = static_cast<pixelformat::format>(form);
     // access is always static
     // m_access = static_cast<access>(acc);
-    m_width = static_cast<std::size_t>(w);
-    m_height = static_cast<std::size_t>(h);
+    //m_width = static_cast<std::size_t>(w);
+    //m_height = static_cast<std::size_t>(h);
 }
 
 texture::~texture() {
@@ -219,7 +223,7 @@ texture::~texture() {
     }
 }
 
-std::optional<texture> texture::load(const std::string& path, renderer& r)
+std::shared_ptr<texture> static_texture::load(const std::string& path, renderer& r)
 {
     npdebug("Loading ", path, " as surface")
     auto surf = surface::load(path);
@@ -227,7 +231,7 @@ std::optional<texture> texture::load(const std::string& path, renderer& r)
     npdebug(path, " loaded successfully")
 
     if (surf) 
-        return texture(r, *surf);
+        return std::static_pointer_cast<texture>(std::make_shared<static_texture>(r, *surf));
     else { 
 #ifdef IMG_LOADING
         npdebug("Unable to load image ", path, "! SDL_image Error: ", IMG_GetError()); 
@@ -236,7 +240,7 @@ std::optional<texture> texture::load(const std::string& path, renderer& r)
 #endif
     } 
     
-    return std::nullopt; // nullopt
+    return nullptr; // nullopt
 }
 
 SDL_Texture* texture::sdl() {
@@ -251,6 +255,14 @@ SDL_Texture* texture::sdl() {
     return m_texture;
 }
 
+streaming_texture::streaming_texture(renderer& r, surface& surf, pixelformat::format p)
+    : texture(r, access::streaming, surf.width(), surf.height(), p)
+{
+    // blit the surface
+    surface buf = lock();
+    surf.blit(buf); // write onto the buffer
+    unlock(); // save changes
+}
 
 /* class window */
 
