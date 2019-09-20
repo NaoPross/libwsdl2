@@ -12,6 +12,9 @@
 #include <cassert>
 #endif
 
+#ifndef __WSDL_EVENT_H__
+#define __WSDL_EVENT_H__
+
 extern "C" {
 #include <SDL2/SDL_events.h>
 }
@@ -317,7 +320,7 @@ namespace wsdl2::event {
 
     // this function cannot be placed inside the cpp because of some
     // weird template shit
-    std::optional<std::variant<
+    inline std::optional<std::variant<
         // quit event
         quit,
         // keyboard events
@@ -380,6 +383,7 @@ namespace wsdl2::event {
 
         return std::nullopt;
     }
-
 }
+
+#endif
 
