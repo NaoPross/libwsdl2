@@ -35,7 +35,7 @@ int main() {
                     if constexpr (std::is_same_v<T, event::key>) {
                         if (e.type == event::key::action::up) {
                             // TODO: map SDLKs and SDL_SCANCODEs
-                            if (e.keysym.sym == SDLK_ESCAPE) {
+                            if (e.code() == SDLK_ESCAPE) {
                                 win.close();
                             }
                         }

@@ -84,6 +84,7 @@ namespace wsdl2::event {
 
     struct key {
         using keycode = SDL_Keycode;
+        using scancode = SDL_Scancode;
         using symbol = SDL_Keysym;
 
         enum class action : std::uint32_t {
@@ -91,14 +92,30 @@ namespace wsdl2::event {
             down = SDL_KEYDOWN,
         };
 
+        // TODO, increase user-friendlyness
+
         const action            type; 
         const std::uint32_t     timestamp;
         const std::uint32_t     window_id;
         const std::uint8_t      __state;
         const std::uint8_t      repeat;
-        const symbol            keysym;
+
+    private:
+        const symbol keysym;
+
+    public:
 
         key() = delete;
+
+        keycode code() const {
+            
+            return keysym.sym;
+        }
+
+        scancode phys_code() const {
+
+            return keysym.scancode;
+        }
 
         static inline key from_event(const SDL_Event& e) {
             static_assert(sizeof(key) == sizeof(SDL_KeyboardEvent));
