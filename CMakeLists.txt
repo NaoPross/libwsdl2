@@ -31,7 +31,9 @@ endif()
 find_package(SDL2_image)
 if (NOT SDL2_image-NOTFOUND)
     message("Building with image support")
+    #target_compile_definitions(wsdl2 PRIVATE IMG_LOADING)
 endif()
+
 
 ############################
 # libwsdl2
@@ -43,6 +45,8 @@ add_library(wsdl2 STATIC
 )
 
 add_library(WSDL2::wsdl2 ALIAS wsdl2)
+
+# check SDL2_IMAGE
 
 set_property(TARGET wsdl2 PROPERTY POSITION_INDEPENDENT_CODE ON)
 

@@ -6,8 +6,8 @@
 extern "C" {
 #include <SDL2/SDL.h>
 
-#ifdef IMG_LOADING
-#include <SDL2/SDL_Image.h>
+#ifdef WSDL2_IMG
+#include <SDL2/SDL_image.h>
 #endif
 }
 
@@ -100,7 +100,7 @@ std::optional<surface> surface::load(const std::string& path)
 {
     SDL_Surface* surf = 
 
-#ifdef IMG_LOADING
+#ifdef WSDL2_IMG
         IMG_Load(path.c_str()); // use the image library
 #else
         SDL_LoadBMP(path.c_str()); // load simply a bitmap
@@ -172,7 +172,7 @@ renderer::~renderer() {
 /* class texture */
 
 texture::texture(renderer& r, texture::access a, int width, int height, pixelformat::format p)
-    : m_renderer(r), m_format(p), m_width(width), m_height(height)
+    : m_renderer(r), m_width(width), m_height(height), m_format(p)
 {
     m_texture = SDL_CreateTexture(r.m_renderer, 
         static_cast<Uint32>(m_format), static_cast<int>(a), 
@@ -181,10 +181,11 @@ texture::texture(renderer& r, texture::access a, int width, int height, pixelfor
 }
 
 texture::texture(texture&& other)
-    : m_renderer(other.m_renderer), m_texture(other.m_texture),
-      m_format(other.m_format),
+    : m_renderer(other.m_renderer), 
       m_width(other.m_width), 
-      m_height(other.m_height)
+      m_height(other.m_height),
+      m_format(other.m_format),
+      m_texture(other.m_texture)
 {
     other.m_texture = nullptr;
 }
