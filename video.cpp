@@ -350,3 +350,10 @@ window& window::get(unsigned id)
     return *window::_windows[id];
 }
 
+point window::size() const 
+{
+    point out;
+    SDL_GetWindowSize(const_cast<SDL_Window*>(m_window), &out.x, &out.y);
+
+    return out;
+}

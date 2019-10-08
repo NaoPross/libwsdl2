@@ -562,6 +562,13 @@ namespace wsdl2 {
             ));
         }
 
+        // suppose that the destination is derived dynamically
+        inline void render(rect& src, rect dest) {
+            util::check(0 == SDL_RenderCopy(
+                m_renderer.sdl(), m_texture, &src, &dest
+            ));
+        }
+
         inline void render(rect& src, rect& dest, 
             const double angle, const point& center, renderer::flip flip)
         {
@@ -737,9 +744,10 @@ namespace wsdl2 {
         renderer& get_renderer() const { return *m_renderer; }
         void clear() const { m_renderer->clear(); }
         void present() const { m_renderer->present(); }
-            
 
         static window& get(unsigned id);
+
+        point size() const;
 
     private:
         bool m_open;
