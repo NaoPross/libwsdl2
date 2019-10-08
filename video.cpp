@@ -167,7 +167,13 @@ renderer::~renderer() {
     }
 }
 
+wsdl2::point renderer::size() const
+{
+    point out;
+    SDL_GetRendererOutputSize(const_cast<SDL_Renderer*>(m_renderer), &out.x, &out.y);
 
+    return out;
+}
 
 /* class texture */
 
@@ -350,10 +356,10 @@ window& window::get(unsigned id)
     return *window::_windows[id];
 }
 
-point window::size() const 
+wsdl2::point window::size() const
 {
-    point out;
-    SDL_GetWindowSize(const_cast<SDL_Window*>(m_window), &out.x, &out.y);
+    wsdl2::point out;
+    SDL_GL_GetDrawableSize(const_cast<SDL_Window*>(m_window), &out.x, &out.y);
 
     return out;
 }

@@ -505,6 +505,8 @@ namespace wsdl2 {
             util::check(0 == SDL_RenderFillRect(sdl(), NULL));
         }
 
+        point size() const;
+
 
     private:
         SDL_Renderer *m_renderer = NULL;
@@ -747,7 +749,7 @@ namespace wsdl2 {
 
         static window& get(unsigned id);
 
-        point size() const;
+        wsdl2::point size() const;
 
     private:
         bool m_open;

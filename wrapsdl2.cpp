@@ -32,10 +32,10 @@ bool wsdl2::initialize(void) {
 
     npdebug("initialized SDL2");
 
-// #ifdef IMG_LOADING
-//     IMG_init(IMG_INIT_PNG | IMG_INIT_JPG);
-//     npdebug("initialize SDL2_Img for PNG and JPG");
-// #endif
+ #ifdef WSDL2_IMG
+     IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
+     npdebug("initialize SDL2_Img for PNG and JPG");
+ #endif
 
 #ifdef WSDL2_TTF
     if (!util::check_ttf(TTF_Init() != -1)) {
