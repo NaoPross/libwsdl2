@@ -109,6 +109,7 @@ target_link_libraries(wsdl2
         ${SDL2_LIBRARIES}
 )
 
+
 if (NOT MM-NOTFOUND)
     target_compile_definitions(wsdl2 PRIVATE WSDL2_USE_MM)
     target_link_libraries(wsdl2 PRIVATE MM::MM)
