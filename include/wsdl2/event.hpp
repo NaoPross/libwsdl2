@@ -341,12 +341,12 @@ namespace wsdl2::event {
         if (SDL_PollEvent(&ev) != 0) {
             switch (ev.type) {
             // keyboard events
-            case SDL_KEYUP: [[fallthrough]]
+            case SDL_KEYUP: [[fallthrough]];
             case SDL_KEYDOWN:
                 return key::from_event(ev);
 
             // mouse events
-            case SDL_MOUSEBUTTONDOWN: [[fallthrough]]
+            case SDL_MOUSEBUTTONDOWN: [[fallthrough]];
             case SDL_MOUSEBUTTONUP:
                 return mouse::button::from_event(ev);
 
